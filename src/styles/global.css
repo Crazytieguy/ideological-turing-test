@@ -48,7 +48,8 @@ div#__next > main {
   }
 
   textarea {
-    background-image: url('../images/textarea.svg');
+    background-image: url('../images/textarea-motion.svg');
     height: 200px;
+    resize: none;
   }
 }

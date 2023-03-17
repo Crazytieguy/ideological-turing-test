@@ -31,7 +31,7 @@ const HomePage = () => {
           <form className="join-form form-control gap-2">
             <input
               id="gameId"
-              className="input input-bordered mx-auto"
+              className="input input-bordered !outline-none mx-auto"
               type="text"
               placeholder="מזהה משחק"
               onChange={(e) => setGameId(e.target.value)}
@@ -39,7 +39,7 @@ const HomePage = () => {
             {!sessionData?.user?.name && (
               <input
                 id="playerId"
-                className="input input-bordered mx-auto"
+                className="input input-bordered !outline-none mx-auto"
                 type="text"
                 placeholder="שם \ כינוי"
                 onChange={(e) => setUserName(e.target.value)}
@@ -48,7 +48,7 @@ const HomePage = () => {
             {!sessionData?.user?.politics && (
               <textarea
                 id="politics"
-                className="input input-bordered mx-auto"
+                className="input input-bordered !outline-none mx-auto"
                 placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
                 onChange={(e) => setPolitics(e.target.value)}
               />
@@ -201,7 +201,7 @@ const AnswerQuestion = ({
               Answer:
             </label>
             <input
-              className="input input-bordered"
+              className="input input-bordered !outline-none"
               id="answer"
               type="text"
               onChange={(e) => setAnswer(e.target.value)}
