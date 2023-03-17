@@ -2,46 +2,8 @@ import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
+import type { Game } from 'shared/game';
 import { characters, CharacterId } from 'shared/characters';
-
-interface CharacterAssignment {
-  playerId: string;
-  characterId: CharacterId;
-}
-
-interface PlayerAnswer extends CharacterAssignment {
-  answer: string;
-  ratings: { rater: string; rating: number }[];
-}
-
-type Game = {
-  id: string;
-  playerIds: string[];
-  question: string;
-  // log: Logger;
-} & (
-  | {
-      phase: 'LOBBY';
-    }
-  | {
-      phase: 'ANSWER_QUESTION';
-      characterAssignments: CharacterAssignment[];
-      playerAnswers: PlayerAnswer[];
-      timeRemaining: number;
-      timer: NodeJS.Timeout;
-    }
-  | {
-      phase: 'RATE_ANSWERS';
-      playerAnswers: PlayerAnswer[];
-      timeRemaining: number;
-      timer: NodeJS.Timeout;
-    }
-  | {
-      phase: 'SCORE';
-      playerAnswers: PlayerAnswer[];
-      scores: 'TODO'; // TODO
-    }
-);
 
 const games: Record<string, Game> = {};
 
@@ -56,8 +18,7 @@ const assignCharacters = (playerIds: string[]) => {
   return questions;
 };
 
-const newGame = () => {
-  const id = Math.random().toString(36).substr(2, 9);
+const newGame = (id: string) => {
   const game: Game = {
     id,
     playerIds: [],
@@ -71,9 +32,12 @@ const newGame = () => {
 const playerJoined = (gameId: string, playerId: string) => {
   const game = games[gameId];
   if (game.phase !== 'LOBBY') {
-    throw new Error('Game already started');
+    console.error('Game already started', game);
   }
-  game.playerIds.push(playerId);
+  if (!game.playerIds.includes(playerId)) {
+    game.playerIds.push(playerId);
+  }
+  console.log(games);
   eventEmmiter.emit(gameId, game);
 };
 
@@ -88,6 +52,7 @@ const playerLeft = (gameId: string, playerId: string) => {
 
 const gameStarted = (gameId: string) => {
   const game = games[gameId];
+  console.log(game);
   if (game.phase !== 'LOBBY') {
     throw new Error('Game already started');
   }
@@ -97,24 +62,25 @@ const gameStarted = (gameId: string) => {
     characterAssignments: assignCharacters(game.playerIds),
     playerAnswers: [],
     timeRemaining: 60,
-    timer: setInterval(() => {
-      const game = games[gameId];
-      if (game.phase !== 'ANSWER_QUESTION') {
-        return;
-      }
-      game.timeRemaining--;
-      if (game.timeRemaining === 0) {
-        clearInterval(game.timer);
-        finishedAnsweringQuestions(gameId);
-      }
-    }, 1000),
+    // timer: setInterval(() => {
+    //   const game = games[gameId];
+    //   if (game.phase !== 'ANSWER_QUESTION') {
+    //     return;
+    //   }
+    //   game.timeRemaining--;
+    //   if (game.timeRemaining === 0) {
+    //     clearInterval(game.timer);
+    //     finishedAnsweringQuestions(gameId);
+    //   }
+    // }, 1000),
   } satisfies Game;
   games[gameId] = nextGame;
+  console.log(games);
   eventEmmiter.emit(gameId, nextGame);
 };
 
 const questionAnswered = (gameId: string, playerId: string, answer: string) => {
-  const game = games[gameId];
+  let game = games[gameId];
   if (game.phase !== 'ANSWER_QUESTION') {
     throw new Error('Game not in ANSWER_QUESTION phase');
   }
@@ -125,33 +91,27 @@ const questionAnswered = (gameId: string, playerId: string, answer: string) => {
     throw new Error('Player not in game');
   }
   game.playerAnswers.push({ ...playerAssignment, answer, ratings: [] });
-  eventEmmiter.emit(gameId, game);
-};
-
-const finishedAnsweringQuestions = (gameId: string) => {
-  const game = games[gameId];
-  if (game.phase !== 'ANSWER_QUESTION') {
-    throw new Error('Game not in ANSWER_QUESTION phase');
+  if (game.playerAnswers.length === game.playerIds.length) {
+    game = {
+      ...game,
+      phase: 'RATE_ANSWERS',
+      timeRemaining: 60,
+      // timer: setInterval(() => {
+      //   const game = games[gameId];
+      //   if (game.phase !== 'RATE_ANSWERS') {
+      //     return;
+      //   }
+      //   game.timeRemaining--;
+      //   if (game.timeRemaining === 0) {
+      //     clearInterval(game.timer);
+      //     // finishedRatingAnswers(gameId);
+      //   }
+      // }, 1000),
+    } satisfies Game;
+    games[gameId] = game;
+    eventEmmiter.emit(gameId, game);
   }
-  clearInterval(game.timer);
-  const nextGame = {
-    ...game,
-    phase: 'RATE_ANSWERS',
-    timeRemaining: 60,
-    timer: setInterval(() => {
-      const game = games[gameId];
-      if (game.phase !== 'RATE_ANSWERS') {
-        return;
-      }
-      game.timeRemaining--;
-      if (game.timeRemaining === 0) {
-        clearInterval(game.timer);
-        // finishedRatingAnswers(gameId);
-      }
-    }, 1000),
-  } satisfies Game;
-  games[gameId] = nextGame;
-  eventEmmiter.emit(gameId, nextGame);
+  eventEmmiter.emit(gameId, game);
 };
 
 const questionAnswerRated = (
@@ -190,7 +150,7 @@ const finishedRatingAnswers = (gameId: string) => {
   if (game.phase !== 'RATE_ANSWERS') {
     throw new Error('Game not in RATE_ANSWERS phase');
   }
-  clearInterval(game.timer);
+  // clearInterval(game.timer);
   const nextGame = {
     ...game,
     phase: 'SCORE',
@@ -223,13 +183,12 @@ class GameEventEmmiter extends EventEmitter {}
 const eventEmmiter = new GameEventEmmiter();
 
 export const gameRouter = router({
-  joinGame: publicProcedure
-    .input(z.object({ gameId: z.string(), playerId: z.string() }))
-    .subscription(({ input: { gameId, playerId } }) => {
+  subscribeToGame: publicProcedure
+    .input(z.object({ gameId: z.string() }))
+    .subscription(({ input: { gameId } }) => {
       if (!games[gameId]) {
-        games[gameId] = newGame();
+        games[gameId] = newGame(gameId);
       }
-      playerJoined(gameId, playerId);
       return observable<Game>((emit) => {
         const onGameUpdate = (game: Game) => emit.next(game);
         eventEmmiter.on(gameId, onGameUpdate);
@@ -237,6 +196,11 @@ export const gameRouter = router({
           eventEmmiter.off(gameId, onGameUpdate);
         };
       });
+    }),
+  joinGame: publicProcedure
+    .input(z.object({ gameId: z.string(), playerId: z.string() }))
+    .mutation(({ input: { gameId, playerId } }) => {
+      playerJoined(gameId, playerId);
     }),
   leaveGame: publicProcedure
     .input(z.object({ gameId: z.string(), playerId: z.string() }))
@@ -252,22 +216,13 @@ export const gameRouter = router({
     .input(
       z.object({
         gameId: z.string(),
-        playerAnswer: z.object({
-          playerId: z.string(),
-          answer: z.string(),
-        }),
+        playerId: z.string(),
+        answer: z.string(),
       }),
     )
-    .mutation(
-      ({
-        input: {
-          gameId,
-          playerAnswer: { playerId, answer },
-        },
-      }) => {
-        questionAnswered(gameId, playerId, answer);
-      },
-    ),
+    .mutation(({ input: { gameId, playerId, answer } }) => {
+      questionAnswered(gameId, playerId, answer);
+    }),
   rateAnswer: publicProcedure
     .input(
       z.object({
