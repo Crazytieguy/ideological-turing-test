@@ -115,13 +115,8 @@ const Play = ({
   if (!game) return <p>no game</p>;
   return (
     <>
-      <h1>Play</h1>
-      <article>
-        <p>gameId: {gameId}</p>
-        <p>playerId: {playerId}</p>
-      </article>
       {game.phase === 'LOBBY' ? (
-        <Lobby game={game} />
+        <Lobby gameId={gameId} game={game} />
       ) : game.phase === 'ANSWER_QUESTION' ? (
         <AnswerQuestion game={game} playerId={playerId} />
       ) : game.phase === 'RATE_ANSWERS' ? (
@@ -133,20 +128,29 @@ const Play = ({
   );
 };
 
-const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
+const Lobby = ({
+  gameId,
+  game,
+}: {
+  gameId: string;
+  game: Game & { phase: 'LOBBY' };
+}) => {
   const startGame = trpc.game.startGame.useMutation();
   return (
     <>
-      <p>Players: {Object.keys(game.players).length}</p>
+      <h1 className="mx-auto">
+        מזהה משחק: <span className="text-red-400">{gameId}</span>
+      </h1>
+      <p className="mx-auto">
+        הצטרפו {Object.keys(game.players).length} שחקנים
+      </p>
       <button
-        className="btn"
+        className="btn mx-auto"
         onClick={() => {
           console.log('startGame', { gameId: game.id });
           startGame.mutate({ gameId: game.id });
         }}
-      >
-        Start Game
-      </button>
+      />
     </>
   );
 };

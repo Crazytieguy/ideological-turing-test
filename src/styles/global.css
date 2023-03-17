@@ -28,38 +28,36 @@ div#__next > main {
   height: 100%;
 }
 
-.join-form {
-  input[type='text'],
-  textarea,
-  button {
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-color: transparent;
-    --rounded-btn: 0;
-    border: none;
-    border-radius: 0;
-    width: 300px;
-    padding: 20px;
-    font-size: 1.5rem;
-  }
+input[type='text'],
+textarea,
+button {
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-color: transparent;
+  --rounded-btn: 0;
+  border: none;
+  border-radius: 0;
+  width: 300px;
+  padding: 20px;
+  font-size: 1.5rem;
+}
 
-  input[type='text'] {
-    background-image: url('../images/input-text-motion.svg');
-    height: 62px;
-  }
+input[type='text'] {
+  background-image: url('../images/input-text-motion.svg');
+  height: 61px;
+}
 
-  textarea {
-    background-image: url('../images/textarea-motion.svg');
-    height: 200px;
-    resize: none;
-  }
+textarea {
+  background-image: url('../images/textarea-motion.svg');
+  height: 200px;
+  resize: none;
+}
 
-  button {
-    background-image: url('../images/button-go-motion.svg');
-    width: 100px;
-    &[disabled] {
-      background-color: transparent;
-      opacity: 0.5;
-    }
+button {
+  background-image: url('../images/button-go-motion.svg');
+  width: 100px;
+  background-color: transparent !important;
+  &[disabled] {
+    opacity: 0.5;
   }
 }

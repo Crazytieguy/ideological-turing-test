@@ -1,10 +1,10 @@
 module.exports = {
   content: ['./src/pages/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    colors: {
-      cyan: '#30ffef',
-    },
     extend: {
+      colors: {
+        cyan: '#30ffef',
+      },
       fontFamily: {
         sans: ['Shaked', 'Indie Flower', 'sans-serif'],
       },
