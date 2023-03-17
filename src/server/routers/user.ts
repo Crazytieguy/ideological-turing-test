@@ -1,5 +1,5 @@
-import { prisma } from 'server/prisma';
-import { authedProcedure, router } from 'server/trpc';
+import { prisma } from '../prisma';
+import { authedProcedure, router } from '../trpc';
 import { z } from 'zod';
 
 export const userRouter = router({

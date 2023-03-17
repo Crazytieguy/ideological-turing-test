@@ -1,7 +1,7 @@
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { Game } from 'shared/game';
-import { trpc } from 'utils/trpc';
+import { Game } from '../shared/game';
+import { trpc } from '../utils/trpc';
 
 const HomePage = () => {
   const [playerId, setPlayerId] = useState<string | undefined>();
