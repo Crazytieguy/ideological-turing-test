@@ -21,45 +21,37 @@ const HomePage = () => {
   }, [status, sessionData]);
 
   return (
-    <main className="container mx-auto max-w-2xl p-8 2xl:px-0 prose">
+    <main
+      dir="rtl"
+      className="container mx-auto max-w-2xl p-8 2xl:px-0 prose bg-cyan"
+    >
       {!joined || !sessionData || !userName || !gameId || !politics ? (
         <>
-          <h1 className="text-center">Join Game</h1>
-          <form className="form-control gap-2">
-            <label htmlFor="gameId" className="label">
-              Enter a game id:
-            </label>
+          <h1 className="text-center">משחק חדש</h1>
+          <form className="join-form form-control gap-2">
             <input
               id="gameId"
-              className="input input-bordered"
+              className="input input-bordered mx-auto"
               type="text"
+              placeholder="מזהה משחק"
               onChange={(e) => setGameId(e.target.value)}
             />
             {!sessionData?.user?.name && (
-              <>
-                <label htmlFor="userName" className="label">
-                  Enter your name:
-                </label>
-                <input
-                  id="userName"
-                  className="input input-bordered"
-                  type="text"
-                  onChange={(e) => setUserName(e.target.value)}
-                />
-              </>
+              <input
+                id="playerId"
+                className="input input-bordered mx-auto"
+                type="text"
+                placeholder="שם \ כינוי"
+                onChange={(e) => setUserName(e.target.value)}
+              />
             )}
             {!sessionData?.user?.politics && (
-              <>
-                <label htmlFor="politics" className="label">
-                  Enter your politics:
-                </label>
-                <input
-                  id="politics"
-                  className="input input-bordered"
-                  type="text"
-                  onChange={(e) => setPolitics(e.target.value)}
-                />
-              </>
+              <textarea
+                id="politics"
+                className="input input-bordered mx-auto"
+                placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
+                onChange={(e) => setPolitics(e.target.value)}
+              />
             )}
             <button
               className="btn"
@@ -81,7 +73,7 @@ const HomePage = () => {
                 setJoined(true);
               }}
             >
-              Join Game!
+              יאללה משחק!
             </button>
           </form>
         </>
