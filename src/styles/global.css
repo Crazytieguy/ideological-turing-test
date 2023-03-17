@@ -30,7 +30,8 @@ div#__next > main {
 
 .join-form {
   input[type='text'],
-  textarea {
+  textarea,
+  button {
     background-repeat: no-repeat;
     background-size: contain;
     background-color: transparent;
@@ -43,7 +44,7 @@ div#__next > main {
   }
 
   input[type='text'] {
-    background-image: url('../images/field.svg');
+    background-image: url('../images/input-text-motion.svg');
     height: 62px;
   }
 
@@ -51,5 +52,14 @@ div#__next > main {
     background-image: url('../images/textarea-motion.svg');
     height: 200px;
     resize: none;
+  }
+
+  button {
+    background-image: url('../images/button-go-motion.svg');
+    width: 100px;
+    &[disabled] {
+      background-color: transparent;
+      opacity: 0.5;
+    }
   }
 }

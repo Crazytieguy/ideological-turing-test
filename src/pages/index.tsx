@@ -54,7 +54,7 @@ const HomePage = () => {
               />
             )}
             <button
-              className="btn"
+              className="btn mx-auto"
               disabled={
                 !sessionData?.user.id || !userName || !gameId || !politics
               }
@@ -72,9 +72,7 @@ const HomePage = () => {
                 }
                 setJoined(true);
               }}
-            >
-              יאללה משחק!
-            </button>
+            />
           </form>
         </>
       ) : (
