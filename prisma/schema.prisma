@@ -45,6 +45,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  totalScore    Int       @default(0)
+  politics      String?
   accounts      Account[]
   sessions      Session[]
 }

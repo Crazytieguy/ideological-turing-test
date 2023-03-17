@@ -6,11 +6,17 @@ import type { Game } from 'shared/game';
 
 const games: Record<string, Game> = {};
 
+const questions: readonly string[] = [
+  'האם הכנסת רשאית לחוקק כל חוק?',
+  'מה דעתך על התנהגות היועמ"שית סביב הרפורמה המשפטית וההפגנות?',
+  "האם עדיף פוליטיקאי מושחת שמקדם את על הדברים לפי האג'נדה העדיפה עליי או להפך?",
+];
+
 const newGame = (id: string) => {
   const game: Game = {
     id,
     players: Object.create(null),
-    question: 'TODO: add questions',
+    question: questions[Math.floor(Math.random() * questions.length)],
     phase: 'LOBBY',
   };
   games[id] = game;

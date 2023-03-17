@@ -1,3 +1,4 @@
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { Game } from 'shared/game';
 import { trpc } from 'utils/trpc';
@@ -5,12 +6,30 @@ import { trpc } from 'utils/trpc';
 const HomePage = () => {
   const [playerId, setPlayerId] = useState<string | undefined>();
   const [gameId, setGameId] = useState<string | undefined>();
-  const [politics, setMyPolitics] = useState<string | undefined>();
   const [joined, setJoined] = useState<boolean>(false);
+  const changePolitics = trpc.user.changePolitics.useMutation();
+  const { data: sessionData } = useSession();
+  const [politics, setPolitics] = useState<string | undefined>(
+    sessionData?.user?.politics,
+  );
+
   return (
     <main className="container mx-auto max-w-2xl p-8 2xl:px-0 prose">
       {!joined || !playerId || !gameId || !politics ? (
         <>
+          {sessionData ? (
+            <div className="flex justify-between">
+              <button className="btn" onClick={() => signOut()}>
+                Sign out
+              </button>
+              <p>Logged in as {sessionData.user.email}</p>
+              <p>Your score is {sessionData.user.totalScore}</p>
+            </div>
+          ) : (
+            <button className="btn" onClick={() => signIn('google')}>
+              Sign in
+            </button>
+          )}
           <h1 className="text-center">Join Game</h1>
           <form className="form-control gap-2">
             <label htmlFor="playerId" className="label">
@@ -32,20 +51,30 @@ const HomePage = () => {
               type="text"
               onChange={(e) => setGameId(e.target.value)}
             />
-            <label htmlFor="politics" className="label">
-              Enter your politics:
-            </label>
-            <input
-              id="politics"
-              className="input input-bordered"
-              type="text"
-              onChange={(e) => setMyPolitics(e.target.value)}
-            />
+            {!sessionData?.user?.politics && (
+              <>
+                <label htmlFor="politics" className="label">
+                  Enter your politics:
+                </label>
+                <input
+                  id="politics"
+                  className="input input-bordered"
+                  type="text"
+                  onChange={(e) => setPolitics(e.target.value)}
+                />
+              </>
+            )}
             <button
               className="btn"
               disabled={!playerId || !gameId || !politics}
-              onClick={(e) => {
+              onClick={async (e) => {
+                if (!politics) {
+                  return;
+                }
                 e.preventDefault();
+                if (sessionData && politics !== sessionData.user.politics) {
+                  await changePolitics.mutateAsync({ politics });
+                }
                 setJoined(true);
               }}
             >

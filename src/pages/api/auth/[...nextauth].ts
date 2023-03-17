@@ -1,5 +1,5 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import NextAuth from 'next-auth';
+import NextAuth, { DefaultSession } from 'next-auth';
 import { AppProviders } from 'next-auth/providers';
 // import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
@@ -39,9 +39,6 @@ if (useMockProvider) {
   // );
 } else {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET) {
-    for (const i of new Array(100)) {
-      console.error(process.env);
-    }
     throw new Error('GOOGLE_CLIENT_ID and GOOGLE_SECRET must be set');
   }
   providers.push(
@@ -51,8 +48,39 @@ if (useMockProvider) {
     }),
   );
 }
+/**
+ * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
+ * object and keep type safety.
+ *
+ * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
+ */
+declare module 'next-auth' {
+  interface Session extends DefaultSession {
+    user: {
+      id: string;
+      politics: string | undefined;
+      totalScore: number;
+    } & DefaultSession['user'];
+  }
+
+  interface User {
+    politics: string | undefined;
+    totalScore: number;
+  }
+}
+
 export default NextAuth({
   // Configure one or more authentication providers
   providers,
   adapter: PrismaAdapter(prisma),
+  callbacks: {
+    session({ session, user }) {
+      if (session.user) {
+        session.user.id = user.id;
+        session.user.politics = user.politics;
+        session.user.totalScore = user.totalScore;
+      }
+      return session;
+    },
+  },
 });
