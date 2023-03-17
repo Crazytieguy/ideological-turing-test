@@ -22,11 +22,29 @@ const finishedRatingAnswers = (gameId: string) => {
   if (game.phase !== 'RATE_ANSWERS') {
     throw new Error('Game not in RATE_ANSWERS phase');
   }
+  const scores = Object.create(null);
+  for (const [id, answer] of Object.entries(game.playerAnswers)) {
+    const wasImpostor = id !== answer.playingAs;
+    if (!scores[id]) {
+      scores[id] = 0;
+    }
+    for (const rating of answer.ratings) {
+      scores[id] += rating.rating;
+      if (!scores[rating.rater]) {
+        scores[rating.rater] = 0;
+      }
+      if (wasImpostor) {
+        scores[rating.rater] -= rating.rating;
+      } else {
+        scores[rating.rater] += rating.rating;
+      }
+    }
+  }
   // clearInterval(game.timer);
   const nextGame = {
     ...game,
     phase: 'SCORE',
-    scores: 'TODO',
+    scores,
   } satisfies Game;
   games[gameId] = nextGame;
   eventEmmiter.emit(gameId, nextGame);
@@ -181,10 +199,12 @@ export const gameRouter = router({
           rating,
         });
         if (
-          Object.values(game.playerAnswers).every(
-            (answer) =>
-              answer.ratings.length === Object.keys(game.players).length - 1,
-          )
+          Object.entries(game.playerAnswers).every(([player, answer]) => {
+            const isImposter = player !== answer.playingAs;
+            const expectedRatings =
+              Object.keys(game.players).length - 1 - (isImposter ? 1 : 0);
+            return answer.ratings.length === expectedRatings;
+          })
         ) {
           finishedRatingAnswers(gameId);
           return;

@@ -114,15 +114,18 @@ const Play = ({
 const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
   const startGame = trpc.game.startGame.useMutation();
   return (
-    <button
-      className="btn"
-      onClick={() => {
-        console.log('startGame', { gameId: game.id });
-        startGame.mutate({ gameId: game.id });
-      }}
-    >
-      Start Game
-    </button>
+    <>
+      <p>Players: {Object.keys(game.players).length}</p>
+      <button
+        className="btn"
+        onClick={() => {
+          console.log('startGame', { gameId: game.id });
+          startGame.mutate({ gameId: game.id });
+        }}
+      >
+        Start Game
+      </button>
+    </>
   );
 };
 
@@ -135,7 +138,8 @@ const AnswerQuestion = ({
 }) => {
   const answerQuestion = trpc.game.answerQuestion.useMutation();
   const [answer, setAnswer] = useState('');
-  const { playingAs: characterId } = game.assignments[playerId];
+  const { playingAs } = game.assignments[playerId];
+  const playingAsSelf = playingAs === playerId;
   const alreadyAnswered = game.playerAnswers[playerId];
   const waitingFor = Object.values(game.players).filter(
     ({ id }) => !game.playerAnswers[id],
@@ -154,13 +158,18 @@ const AnswerQuestion = ({
       ) : (
         <>
           <p>
-            You are playing as <em>{characterId}</em>
+            You are playing as{' '}
+            <em>{playingAsSelf ? 'Yourself!' : playingAs}</em>
           </p>
-          <p>
-            {characterId}
-            {"'"}s politics are:
-          </p>
-          <blockquote>{game.players[characterId].politics}</blockquote>
+          {!playingAsSelf && (
+            <>
+              <p>
+                {playingAs}
+                {"'"}s politics are:
+              </p>
+              <blockquote>{game.players[playingAs].politics}</blockquote>
+            </>
+          )}
           <p>The question is:</p>
           <blockquote>{game.question}</blockquote>
           <form className="form-control max-w-xl">
@@ -205,9 +214,11 @@ const RateAnswers = ({
   const rateAnswer = trpc.game.rateAnswer.useMutation();
   const [index, setIndex] = useState(0);
   const [rating, setRating] = useState(2);
-  const playerIds = Object.keys(game.players).filter((id) => id !== playerId);
-  if (!playerIds[index]) return <p>Done rating</p>;
-  const answerToRate = game.playerAnswers[playerIds[index]];
+  const answersToRate = Object.entries(game.playerAnswers).filter(
+    ([id, { playingAs }]) => ![id, playingAs].includes(playerId),
+  );
+  if (!answersToRate[index]) return <p>Done rating</p>;
+  const answerToRate = answersToRate[index][1];
   return (
     <>
       <h2>Rate the answer!</h2>
@@ -222,8 +233,8 @@ const RateAnswers = ({
           <span>Impostor!</span>
           <input
             type="range"
-            min="0"
-            max="4"
+            min="-2"
+            max="2"
             value={rating}
             className="range"
             onChange={(e) => setRating(Number(e.target.value))}
@@ -240,7 +251,7 @@ const RateAnswers = ({
                 rating: {
                   rating,
                   rater: playerId,
-                  playerBeingRated: playerIds[index],
+                  playerBeingRated: answersToRate[index][0],
                 },
               });
               setIndex(index + 1);
@@ -254,8 +265,20 @@ const RateAnswers = ({
   );
 };
 
-const Score = ({ game }: { game: Game }) => {
-  return <pre>{JSON.stringify(game, null, 2)}</pre>;
+const Score = ({ game }: { game: Game & { phase: 'SCORE' } }) => {
+  const scores = Object.entries(game.scores).sort(([, a], [, b]) => b - a);
+  return (
+    <>
+      <h2>Scores!</h2>
+      <ol>
+        {scores.map(([id, score]) => (
+          <li key={id}>
+            {id}: {score}
+          </li>
+        ))}
+      </ol>
+    </>
+  );
 };
 
 export default HomePage;

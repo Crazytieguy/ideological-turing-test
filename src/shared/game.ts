@@ -37,6 +37,6 @@ export type Game = {
   | {
       phase: 'SCORE';
       playerAnswers: Record<string, PlayerAnswer>;
-      scores: 'TODO'; // TODO
+      scores: Record<string, number>;
     }
 );
