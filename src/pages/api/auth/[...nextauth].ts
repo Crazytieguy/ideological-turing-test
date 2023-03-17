@@ -39,7 +39,9 @@ if (useMockProvider) {
   // );
 } else {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET) {
-    console.log(process.env);
+    for (const i of new Array(100)) {
+      console.error(process.env);
+    }
     throw new Error('GOOGLE_CLIENT_ID and GOOGLE_SECRET must be set');
   }
   providers.push(
