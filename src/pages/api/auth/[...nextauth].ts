@@ -1,59 +1,55 @@
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import NextAuth from 'next-auth';
 import { AppProviders } from 'next-auth/providers';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GithubProvider from 'next-auth/providers/github';
+// import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import { prisma } from 'server/prisma';
 
 let useMockProvider = process.env.NODE_ENV === 'test';
-const { GITHUB_CLIENT_ID, GITHUB_SECRET, NODE_ENV, APP_ENV } = process.env;
+const { GOOGLE_CLIENT_ID, GOOGLE_SECRET, NODE_ENV, APP_ENV } = process.env;
 if (
   (NODE_ENV !== 'production' || APP_ENV === 'test') &&
-  (!GITHUB_CLIENT_ID || !GITHUB_SECRET)
+  (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET)
 ) {
-  console.log('⚠️ Using mocked GitHub auth correct credentials were not added');
+  console.log('⚠️ Using mocked Google auth correct credentials were not added');
   useMockProvider = true;
 }
 const providers: AppProviders = [];
 if (useMockProvider) {
-  providers.push(
-    CredentialsProvider({
-      id: 'github',
-      name: 'Mocked GitHub',
-      async authorize(credentials) {
-        if (credentials) {
-          const user = {
-            id: credentials.name,
-            name: credentials.name,
-            email: credentials.name,
-          };
-          return user;
-        }
-        return null;
-      },
-      credentials: {
-        name: { type: 'test' },
-      },
-    }),
-  );
+  console.log("mock provider doesn't actually work");
+  // providers.push(
+  //   CredentialsProvider({
+  //     id: 'google',
+  //     name: 'Mocked Google',
+  //     async authorize(credentials) {
+  //       if (credentials) {
+  //         const user = {
+  //           id: credentials.name,
+  //           name: credentials.name,
+  //           email: credentials.name,
+  //         };
+  //         return user;
+  //       }
+  //       return null;
+  //     },
+  //     credentials: {
+  //       name: { type: 'test' },
+  //     },
+  //   }),
+  // );
 } else {
-  if (!GITHUB_CLIENT_ID || !GITHUB_SECRET) {
-    throw new Error('GITHUB_CLIENT_ID and GITHUB_SECRET must be set');
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET) {
+    throw new Error('GOOGLE_CLIENT_ID and GOOGLE_SECRET must be set');
   }
   providers.push(
-    GithubProvider({
-      clientId: GITHUB_CLIENT_ID,
-      clientSecret: GITHUB_SECRET,
-      profile(profile) {
-        return {
-          id: profile.id,
-          name: profile.login,
-          email: profile.email,
-          image: profile.avatar_url,
-        } as any;
-      },
+    GoogleProvider({
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_SECRET,
     }),
   );
 }
 export default NextAuth({
   // Configure one or more authentication providers
   providers,
+  adapter: PrismaAdapter(prisma),
 });

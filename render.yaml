@@ -2,7 +2,7 @@
 # previewsExpireAfterDays: 7 # automatically delete the environment after the specified number of days of inactivity
 services:
   - type: web
-    name: trpc-websockets
+    name: ideological-turing-test
     env: node
     plan: free
     # NODE_ENV is development here in order for pnpm to install dev deps
@@ -18,12 +18,12 @@ services:
 
       - key: DATABASE_URL
         fromDatabase:
-          name: trpc-websockets-db
+          name: ideological-turing-test-db
           property: connectionString
 
-      - fromGroup: trpc-websockets
+      - fromGroup: ideological-turing-test
 
 databases:
-  - name: trpc-websockets-db
+  - name: ideological-turing-test-db
     # plan: starter
     plan: free
