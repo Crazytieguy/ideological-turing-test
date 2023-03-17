@@ -1,18 +1,20 @@
-import type { CharacterId } from './characters';
-
-interface CharacterAssignment {
-  playerId: string;
-  characterId: CharacterId;
+export interface Player {
+  id: string;
+  politics: string;
 }
 
-interface PlayerAnswer extends CharacterAssignment {
+interface Assignment {
+  playingAs: string;
+}
+
+interface PlayerAnswer extends Assignment {
   answer: string;
   ratings: { rater: string; rating: number }[];
 }
 
 export type Game = {
   id: string;
-  playerIds: string[];
+  players: Record<string, Player>;
   question: string;
   // log: Logger;
 } & (
@@ -21,20 +23,20 @@ export type Game = {
     }
   | {
       phase: 'ANSWER_QUESTION';
-      characterAssignments: CharacterAssignment[];
-      playerAnswers: PlayerAnswer[];
-      timeRemaining: number;
+      assignments: Record<string, Assignment>;
+      playerAnswers: Record<string, PlayerAnswer>;
+      // timeRemaining: number;
       // timer: NodeJS.Timeout;
     }
   | {
       phase: 'RATE_ANSWERS';
-      playerAnswers: PlayerAnswer[];
-      timeRemaining: number;
+      playerAnswers: Record<string, PlayerAnswer>;
+      // timeRemaining: number;
       // timer: NodeJS.Timeout;
     }
   | {
       phase: 'SCORE';
-      playerAnswers: PlayerAnswer[];
+      playerAnswers: Record<string, PlayerAnswer>;
       scores: 'TODO'; // TODO
     }
 );
