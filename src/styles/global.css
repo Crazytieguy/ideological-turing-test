@@ -66,4 +66,24 @@ div#__next > main {
       opacity: 0.5;
     }
   }
+
+  input[type='range']::-webkit-slider-runnable-track {
+    background: #ddd; /* Set the track color */
+    height: 20px; /* Set the track height */
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default appearance */
+    height: 40px; /* Set the thumb height */
+    width: 20px; /* Set the thumb width */
+    background: #333; /* Set the thumb color */
+    margin-top: -10px; /* Center the thumb on the track */
+  }
+  input[type='range'] {
+    -webkit-appearance: none; /* Remove default appearance */
+    width: 100%; /* Set the slider width */
+    height: 3px; /* Set the slider height */
+    background: transparent; /* Make the slider background transparent */
+    outline: none; /* Remove the outline */
+  }
 }

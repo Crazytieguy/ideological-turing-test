@@ -305,39 +305,35 @@ const RateAnswers = ({
     );
   return (
     <>
-      <h2>דרג.י את התשובה!</h2>
+      <h1 className="my-3 text-center">השאלה</h1>
+      <div className="text-center text-xl">{game.question}</div>
+      <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
+      <div className="text-center text-lg">
+        {game.players[answerToRate.playingAs].politics}
+      </div>
+      <h1 className="text-4xl text-center">&quot;</h1>
+      <div className="text-xl text-center">{answerToRate.answer}</div>
       {imposingSelf ? (
-        <p>השחקן התחזה אלייך!</p>
+        <p className="text-center">עד כמה טוב התחזו אלייך?</p>
       ) : (
-        <p>השחקן ענה בתור {answerToRate.playingAs}</p>
+        <p className="text-center">האם הם מחתזים???</p>
       )}
-      {!imposingSelf && (
-        <>
-          <p>ל{answerToRate.playingAs} יש את התיאור הבא:</p>
-          <blockquote>
-            {game.players[answerToRate.playingAs].politics}
-          </blockquote>
-        </>
-      )}
-      <p>הוא ענה:</p>
-      <blockquote>{answerToRate.answer}</blockquote>
-      {imposingSelf ? <p>עד כמה טוב התחזו אלייך?</p> : <p>האם הם מחתזים???</p>}
       <form className="form-control max-w-xl">
-        <label className="flex gap-2 content-between">
-          {imposingSelf ? <span>גרוע</span> : <span>!מתחזה</span>}
+        <label className="flex gap-2 content-between items-center">
+          <span>{imposingSelf ? 'פחות' : 'מתחזה!'}</span>
           <input
             type="range"
             min="-2"
             max="2"
             value={rating}
-            className="range"
+            className="mx-2"
             onChange={(e) => setRating(Number(e.target.value))}
           />
-          {imposingSelf ? <span>מצוין</span> : <span>מקורי</span>}
+          <span>{imposingSelf ? 'מצוין!' : 'מקורי'}</span>
         </label>
         <div className="pt-2">
           <button
-            className="btn"
+            className="btn mx-auto my-10"
             onClick={(e) => {
               e.preventDefault();
               submitAnswer();
