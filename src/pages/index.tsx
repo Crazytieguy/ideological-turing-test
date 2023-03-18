@@ -327,6 +327,7 @@ const Score = ({
   return (
     <>
       <h2>ניקוד!</h2>
+      <pre dir="ltr">{JSON.stringify(game.playerAnswers, null, 2)}</pre>
       <ol>
         {scores.map(([id, score]) => (
           <li key={id}>

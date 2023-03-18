@@ -58,3 +58,9 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model GameLogSimple {
+  id        String   @id @default(cuid())
+  game      Json
+  createdAt DateTime @default(now())
+}

@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import type { Game } from '../../shared/game';
 import * as crypto from 'crypto';
+import { prisma } from 'server/prisma';
+import { Prisma } from '@prisma/client';
 
 const questions: readonly string[] = [
   'האם הכנסת רשאית לחוקק כל חוק?',
@@ -29,7 +31,7 @@ const newGame = (id: string) => {
   return game;
 };
 
-const finishedRatingAnswers = (gameId: string) => {
+const finishedRatingAnswers = async (gameId: string) => {
   const game = games[gameId];
   if (game.phase !== 'RATE_ANSWERS') {
     throw new Error('Game not in RATE_ANSWERS phase');
@@ -60,6 +62,12 @@ const finishedRatingAnswers = (gameId: string) => {
   } satisfies Game;
   games[gameId] = nextGame;
   eventEmmiter.emit(gameId, nextGame);
+  await prisma.gameLogSimple.create({
+    data: {
+      id: game.id,
+      game: nextGame as unknown as Prisma.JsonObject,
+    },
+  });
 };
 
 function startGame(gameId: string) {
@@ -225,7 +233,7 @@ export const gameRouter = router({
       }),
     )
     .mutation(
-      ({
+      async ({
         input: {
           gameId,
           rating: { rater, rating, playerBeingRated },
@@ -247,7 +255,7 @@ export const gameRouter = router({
             return answer.ratings.length === expectedRatings;
           })
         ) {
-          finishedRatingAnswers(gameId);
+          await finishedRatingAnswers(gameId);
           return;
         }
         eventEmmiter.emit(gameId, game);
