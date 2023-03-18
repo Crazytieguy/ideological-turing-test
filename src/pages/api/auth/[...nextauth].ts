@@ -41,9 +41,8 @@ export default NextAuth({
       id: 'credentials',
       name: 'Credentials',
       credentials: {},
-      async authorize(creds, req) {
-        console.log('in authorize', { req });
-        // random id
+      async authorize() {
+        // This is only called on user sign up. I think.
         return {
           id: crypto.randomUUID(),
           politics: undefined,

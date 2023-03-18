@@ -4,8 +4,6 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import type { Game } from '../../shared/game';
 
-const games: Record<string, Game> = {};
-
 const questions: readonly string[] = [
   'האם הכנסת רשאית לחוקק כל חוק?',
   'מה דעתך על התנהגות היועמ"שית סביב הרפורמה המשפטית וההפגנות?',
@@ -78,13 +76,14 @@ class GameEventEmmiter extends EventEmitter {}
 
 const eventEmmiter = new GameEventEmmiter();
 
+const games: Record<string, Game> = {};
+
+let publicLobbyId: string | undefined;
+
 export const gameRouter = router({
   subscribeToGame: publicProcedure
     .input(z.object({ gameId: z.string() }))
     .subscription(({ input: { gameId } }) => {
-      if (!games[gameId]) {
-        games[gameId] = newGame(gameId);
-      }
       return observable<Game>((emit) => {
         const onGameUpdate = (game: Game) => emit.next(game);
         eventEmmiter.on(gameId, onGameUpdate);
@@ -96,12 +95,21 @@ export const gameRouter = router({
   joinGame: publicProcedure
     .input(
       z.object({
-        gameId: z.string(),
+        gameId: z.string().optional(),
         playerId: z.string(),
         politics: z.string(),
       }),
     )
     .mutation(({ input: { gameId, playerId, politics } }) => {
+      if (!gameId) {
+        if (!publicLobbyId) {
+          publicLobbyId = crypto.randomUUID();
+        }
+        gameId = publicLobbyId;
+        if (!games[gameId]) {
+          games[gameId] = newGame(gameId);
+        }
+      }
       const game = games[gameId];
       if (game.phase !== 'LOBBY') {
         console.error('Game already started', game);
@@ -111,6 +119,7 @@ export const gameRouter = router({
       }
       console.log(games);
       eventEmmiter.emit(gameId, game);
+      return game;
     }),
   leaveGame: publicProcedure
     .input(z.object({ gameId: z.string(), playerId: z.string() }))
@@ -124,6 +133,9 @@ export const gameRouter = router({
       console.log(game);
       if (game.phase !== 'LOBBY') {
         throw new Error('Game already started');
+      }
+      if (gameId === publicLobbyId) {
+        publicLobbyId = undefined;
       }
       const playerIds = Object.keys(game.players);
       const assignments = Object.create(null);

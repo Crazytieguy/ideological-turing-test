@@ -6,58 +6,52 @@ import { trpc } from '../utils/trpc';
 const HomePage = () => {
   const updateUser = trpc.user.updateUser.useMutation();
   const { data: sessionData, status } = useSession();
-  const [gameId, setGameId] = useState<string | undefined>();
   const [joined, setJoined] = useState<boolean>(false);
-  const [userName, setUserName] = useState<string | null | undefined>(
-    sessionData?.user?.name,
-  );
-  const [politics, setPolitics] = useState<string | null | undefined>(
-    sessionData?.user?.politics,
-  );
+  const [userName, setUserName] = useState<string>('');
+  const [politics, setPolitics] = useState<string>('');
   useEffect(() => {
     if (status !== 'loading' && !sessionData?.user.id) {
       signIn('credentials', { redirect: false });
     }
   }, [status, sessionData]);
+  useEffect(() => {
+    if (sessionData?.user.id) {
+      if (!userName && sessionData.user.name) {
+        setUserName(sessionData.user.name);
+      }
+      if (!politics && sessionData.user.politics) {
+        setPolitics(sessionData.user.politics);
+      }
+    }
+  }, [sessionData, userName, politics]);
 
   return (
     <main
       dir="rtl"
       className="game container mx-auto flex flex-col justify-center max-w-2xl p-8 2xl:px-0 prose"
     >
-      {!joined || !sessionData || !userName || !gameId || !politics ? (
+      {!joined || !sessionData || !userName || !politics ? (
         <>
           <h1 className="text-center">משחק חדש</h1>
           <form className="join-form form-control gap-2">
             <input
-              id="gameId"
+              id="playerId"
               className="input input-bordered !outline-none mx-auto"
               type="text"
-              placeholder="מזהה משחק"
-              onChange={(e) => setGameId(e.target.value)}
+              placeholder="שם \ כינוי"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
             />
-            {!sessionData?.user?.name && (
-              <input
-                id="playerId"
-                className="input input-bordered !outline-none mx-auto"
-                type="text"
-                placeholder="שם \ כינוי"
-                onChange={(e) => setUserName(e.target.value)}
-              />
-            )}
-            {!sessionData?.user?.politics && (
-              <textarea
-                id="politics"
-                className="input input-bordered !outline-none mx-auto"
-                placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
-                onChange={(e) => setPolitics(e.target.value)}
-              />
-            )}
+            <textarea
+              id="politics"
+              className="input input-bordered !outline-none mx-auto"
+              value={politics}
+              placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
+              onChange={(e) => setPolitics(e.target.value)}
+            />
             <button
               className="btn mx-auto"
-              disabled={
-                !sessionData?.user.id || !userName || !gameId || !politics
-              }
+              disabled={!sessionData?.user.id || !userName || !politics}
               onClick={async (e) => {
                 if (!politics || !userName) {
                   return;
@@ -80,47 +74,62 @@ const HomePage = () => {
           </form>
         </>
       ) : (
-        <Play {...{ gameId, politics, playerId: userName }} />
+        <JoinGame {...{ politics, playerId: userName }} />
       )}
     </main>
   );
 };
 
-const Play = ({
+const JoinGame = ({
   gameId,
   playerId,
   politics,
 }: {
-  gameId: string;
+  gameId?: string;
   playerId: string;
   politics: string;
 }) => {
   const [game, setGame] = useState<Game | undefined>();
   const joinGame = trpc.game.joinGame.useMutation();
+  useEffect(() => {
+    if (!game) {
+      joinGame.mutateAsync({ gameId, playerId, politics }).then(setGame);
+    }
+  }, [game, gameId, playerId, politics, joinGame]);
+  if (!game) return <p>Joining Game...</p>;
+  return <Play {...{ game, playerId, politics }} />;
+};
+
+const Play = ({
+  game: InitialGame,
+  playerId,
+}: {
+  game: Game;
+  playerId: string;
+}) => {
+  const [game, setGame] = useState<Game>(InitialGame);
   trpc.game.subscribeToGame.useSubscription(
-    { gameId },
+    { gameId: game.id },
     {
-      onStarted: async () => {
-        console.log('Subscription started');
-        try {
-          await joinGame.mutateAsync({ gameId, playerId, politics });
-        } catch {}
-      },
+      // onStarted: async () => {
+      //   console.log('Subscription started');
+      //   try {
+      //     await joinGame.mutateAsync({ gameId, playerId, politics });
+      //   } catch {}
+      // },
       onData(state) {
         console.log('Subscription data:', state);
         setGame(state);
       },
       onError(err) {
         console.error('Subscription error:', err);
-        setGame(undefined);
       },
     },
   );
-  if (!game) return <p>no game</p>;
   return (
     <>
       {game.phase === 'LOBBY' ? (
-        <Lobby gameId={gameId} game={game} />
+        <Lobby game={game} />
       ) : game.phase === 'ANSWER_QUESTION' ? (
         <AnswerQuestion game={game} playerId={playerId} />
       ) : game.phase === 'RATE_ANSWERS' ? (
@@ -132,18 +141,12 @@ const Play = ({
   );
 };
 
-const Lobby = ({
-  gameId,
-  game,
-}: {
-  gameId: string;
-  game: Game & { phase: 'LOBBY' };
-}) => {
+const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
   const startGame = trpc.game.startGame.useMutation();
   return (
     <>
       <h1 className="mx-auto">
-        מזהה משחק: <span className="text-red-400">{gameId}</span>
+        מזהה משחק: <span className="text-red-400">{game.id}</span>
       </h1>
       <p className="mx-auto">
         הצטרפו {Object.keys(game.players).length} שחקנים
