@@ -82,13 +82,24 @@ let publicLobbyId: string | undefined;
 
 export const gameRouter = router({
   subscribeToGame: publicProcedure
-    .input(z.object({ gameId: z.string() }))
-    .subscription(({ input: { gameId } }) => {
+    .input(z.object({ playerId: z.string(), gameId: z.string() }))
+    .subscription(({ input: { playerId, gameId } }) => {
       return observable<Game>((emit) => {
         const onGameUpdate = (game: Game) => emit.next(game);
         eventEmmiter.on(gameId, onGameUpdate);
         return () => {
           eventEmmiter.off(gameId, onGameUpdate);
+          const game = games[gameId];
+          if (!game) {
+            return;
+          }
+          // TODO: do we want to clean up other keys?
+          delete game.players[playerId];
+          if (Object.keys(game.players).length === 0) {
+            delete games[gameId];
+          } else {
+            eventEmmiter.emit(gameId, game);
+          }
         };
       });
     }),

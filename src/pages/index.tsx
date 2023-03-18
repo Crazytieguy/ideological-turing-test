@@ -109,7 +109,7 @@ const Play = ({
 }) => {
   const [game, setGame] = useState<Game>(InitialGame);
   trpc.game.subscribeToGame.useSubscription(
-    { gameId: game.id },
+    { playerId, gameId: game.id },
     {
       onData(state) {
         console.log('Subscription data:', state);
