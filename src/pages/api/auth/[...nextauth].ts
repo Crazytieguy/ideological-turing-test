@@ -1,6 +1,7 @@
 import NextAuth, { DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from 'server/prisma';
+import * as crypto from 'crypto';
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
