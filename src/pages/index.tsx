@@ -331,18 +331,14 @@ const RateAnswers = ({
           />
           <span>{imposingSelf ? 'מצוין!' : 'מקורי'}</span>
         </label>
-        <div className="pt-2">
-          <button
-            className="btn mx-auto my-10"
-            onClick={(e) => {
-              e.preventDefault();
-              submitAnswer();
-            }}
-          >
-            שלח.י דירוג
-          </button>
-        </div>
-        <p>{time}</p>
+        <button
+          className="btn mx-auto my-10"
+          onClick={(e) => {
+            e.preventDefault();
+            submitAnswer();
+          }}
+        />
+        <h1>{time}</h1>
       </form>
       {lastAnswerWasImpostor !== undefined && (
         <p>התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!</p>
