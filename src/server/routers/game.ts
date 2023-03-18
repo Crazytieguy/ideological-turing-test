@@ -36,21 +36,28 @@ const finishedRatingAnswers = async (gameId: string) => {
   if (game.phase !== 'RATE_ANSWERS') {
     throw new Error('Game not in RATE_ANSWERS phase');
   }
-  const scores = Object.create(null);
-  for (const [id, answer] of Object.entries(game.playerAnswers)) {
-    const wasImpostor = id !== answer.playingAs;
-    if (!scores[id]) {
-      scores[id] = 0;
-    }
-    for (const rating of answer.ratings) {
-      scores[id] += rating.rating;
-      if (!scores[rating.rater]) {
-        scores[rating.rater] = 0;
-      }
+  const scores = {
+    atImposing: Object.create(null),
+    atGuessing: Object.create(null),
+    total: Object.create(null),
+  };
+  for (const [id, { playingAs, ratings }] of Object.entries(
+    game.playerAnswers,
+  )) {
+    const wasImpostor = id !== playingAs;
+    scores.atImposing[id] = 0;
+    scores.total[id] = scores.total[id] || 0;
+    for (const { rater, rating } of ratings) {
+      scores.atImposing[id] += rating;
+      scores.total[id] += rating;
+      scores.atGuessing[rater] = scores.atGuessing[rater] || 0;
+      scores.total[rater] = scores.total[rater] || 0;
       if (wasImpostor) {
-        scores[rating.rater] -= rating.rating;
+        scores.atGuessing[rater] -= rating;
+        scores.total[rater] -= rating;
       } else {
-        scores[rating.rater] += rating.rating;
+        scores.atGuessing[rater] += rating;
+        scores.total[rater] += rating;
       }
     }
   }

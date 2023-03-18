@@ -313,7 +313,6 @@ const Score = ({
   game: Game & { phase: 'SCORE' };
   joinAnotherGame: () => void;
 }) => {
-  const scores = Object.entries(game.scores).sort(([, a], [, b]) => b - a);
   const [secondsRemaining, setSecondsRemaining] = useState(10);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -328,13 +327,49 @@ const Score = ({
     <>
       <h2>ניקוד!</h2>
       <pre dir="ltr">{JSON.stringify(game.playerAnswers, null, 2)}</pre>
-      <ol>
-        {scores.map(([id, score]) => (
-          <li key={id}>
-            {id}: {score}
-          </li>
-        ))}
-      </ol>
+      <ul>
+        {Object.entries(game.playerAnswers).map(
+          ([id, { playingAs, ratings }]) => {
+            const wasImpostor = id !== playingAs;
+            return (
+              <li key={id}>
+                <p>
+                  {id} {wasImpostor ? `התחזה ל ${playingAs}` : 'שיחק את עצמו'}
+                </p>
+                <ul className="list-none flex">
+                  {ratings
+                    .sort((a, b) => b.rating - a.rating)
+                    .map(({ rater, rating }) => (
+                      <li key={rater} className="px-4">
+                        {rater} דירג {rating}
+                      </li>
+                    ))}
+                </ul>
+              </li>
+            );
+          },
+        )}
+      </ul>
+      <p>פרס המתחזה</p>
+      <ul className="list-none">
+        {Object.entries(game.scores.atImposing)
+          .sort(([, a], [, b]) => b - a)
+          .map(([player, score]) => (
+            <li key={player}>
+              {player} {score}
+            </li>
+          ))}
+      </ul>
+      <p>פרס הבלש</p>
+      <ul className="list-none">
+        {Object.entries(game.scores.atGuessing)
+          .sort(([, a], [, b]) => b - a)
+          .map(([player, score]) => (
+            <li key={player}>
+              {player} {score}
+            </li>
+          ))}
+      </ul>
       <p>המשחק הבא יתחיל בעוד: {secondsRemaining}</p>
     </>
   );

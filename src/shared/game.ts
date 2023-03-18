@@ -37,6 +37,10 @@ export type Game = {
   | {
       phase: 'SCORE';
       playerAnswers: Record<string, PlayerAnswer>;
-      scores: Record<string, number>;
+      scores: {
+        atImposing: Record<string, number>;
+        atGuessing: Record<string, number>;
+        total: Record<string, number>;
+      };
     }
 );
