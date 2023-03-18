@@ -68,7 +68,11 @@ const HomePage = () => {
                   (politics !== sessionData.user.politics ||
                     userName !== sessionData.user.name)
                 ) {
-                  await updateUser.mutateAsync({ politics, name: userName });
+                  await updateUser.mutateAsync({
+                    id: sessionData.user.id,
+                    politics,
+                    name: userName,
+                  });
                 }
                 setJoined(true);
               }}

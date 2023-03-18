@@ -1,13 +1,13 @@
 import { prisma } from '../prisma';
-import { authedProcedure, router } from '../trpc';
+import { publicProcedure, router } from '../trpc';
 import { z } from 'zod';
 
 export const userRouter = router({
-  updateUser: authedProcedure
-    .input(z.object({ politics: z.string(), name: z.string() }))
-    .mutation(async ({ ctx, input: data }) => {
+  updateUser: publicProcedure
+    .input(z.object({ id: z.string(), politics: z.string(), name: z.string() }))
+    .mutation(async ({ input: { id, ...data } }) => {
       const user = await prisma.user.update({
-        where: { id: ctx.user.id },
+        where: { id },
         data,
       });
       return user;
