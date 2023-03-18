@@ -315,12 +315,16 @@ const RateAnswers = ({
   if (!answersToRate[index])
     return (
       <>
-        <p>סיימת לדרג</p>
+        <div className="mx-auto my-auto center-on-top">
+          <h1 className="mx-auto my-3">תיכף כולם יצטרפו</h1>
+        </div>
         {lastAnswerWasImpostor !== undefined && (
           <p>
             התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!
           </p>
         )}
+        <img src={danceGreen.src} className="dance dance-top" />
+        <img src={danceMagenta.src} className="dance dance-bottom" />
       </>
     );
   return (
