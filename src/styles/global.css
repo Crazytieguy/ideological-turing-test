@@ -33,6 +33,33 @@ div#__next > main {
   background-image: url('../images/background-motion.svg');
   background-size: cover;
 
+  .center-on-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+  .dance {
+    position: fixed;
+    right: 0;
+    left: 0;
+    margin: auto;
+    height: 40%;
+  }
+  .dance-top {
+    top: 0;
+    transform: rotateZ(180deg);
+  }
+  .dance-bottom {
+    bottom: 0;
+  }
+
   input[type='text'],
   textarea,
   button {
@@ -65,6 +92,26 @@ div#__next > main {
     &[disabled] {
       opacity: 0.5;
     }
+  }
+
+  input[type='range']::-webkit-slider-runnable-track {
+    background: #ddd; /* Set the track color */
+    height: 20px; /* Set the track height */
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default appearance */
+    height: 40px; /* Set the thumb height */
+    width: 20px; /* Set the thumb width */
+    background: #333; /* Set the thumb color */
+    margin-top: -10px; /* Center the thumb on the track */
+  }
+  input[type='range'] {
+    -webkit-appearance: none; /* Remove default appearance */
+    width: 100%; /* Set the slider width */
+    height: 3px; /* Set the slider height */
+    background: transparent; /* Make the slider background transparent */
+    outline: none; /* Remove the outline */
   }
 }
 

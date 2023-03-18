@@ -8,6 +8,8 @@ import number2 from '../images/numbers/Untitled-34-19.png';
 import number3 from '../images/numbers/Untitled-34-20.png';
 import number4 from '../images/numbers/Untitled-34-21.png';
 import number5 from '../images/numbers/Untitled-34-22.png';
+import danceGreen from '../images/dance-green.gif';
+import danceMagenta from '../images/dance-magenta.gif';
 
 const AVATARS = [avatar1];
 const numbers = [number1, number2, number3, number4, number5];
@@ -56,7 +58,7 @@ const HomePage = () => {
           <form className="join-form form-control gap-2">
             <input
               id="playerId"
-              className="input input-bordered !outline-none mx-auto"
+              className="input input-bordered !outline-none mx-auto text-center"
               type="text"
               placeholder="שם \ כינוי"
               value={userName}
@@ -66,7 +68,7 @@ const HomePage = () => {
               id="politics"
               className="input input-bordered !outline-none mx-auto"
               value={politics}
-              placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
+              placeholder="תיאור עצמי (לדוגמה: שקד, 28, תל אביבית, הצבעתי עבודה וחשוב לי זכויות נשים)"
               onChange={(e) => setPolitics(e.target.value)}
             />
             <button
@@ -160,18 +162,30 @@ const Play = ({
 
 const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
   const startGame = trpc.game.startGame.useMutation();
+  const numJoined = Object.keys(game.players).length;
   return (
     <>
-      <p className="mx-auto">
-        הצטרפו {Object.keys(game.players).length} שחקנים
-      </p>
-      <button
-        className="btn mx-auto"
-        onClick={() => {
-          console.log('startGame', { gameId: game.id });
-          startGame.mutate({ gameId: game.id });
-        }}
-      />
+      <div className="mx-auto my-auto center-on-top">
+        <h1 className="mx-auto my-3">תיכף כולם יצטרפו</h1>
+        {numJoined > 1 ? (
+          <p className="mx-auto">
+            הצטרפו {numJoined} שחקנים, צריך לפחות 3 כדי לשחק
+          </p>
+        ) : (
+          <p className="mx-auto">כרגע אין פה אף אחד חוץ ממך</p>
+        )}
+        {numJoined >= 3 && (
+          <button
+            className="btn mx-auto"
+            onClick={() => {
+              console.log('startGame', { gameId: game.id });
+              startGame.mutate({ gameId: game.id });
+            }}
+          />
+        )}
+      </div>
+      <img src={danceGreen.src} className="dance dance-top" />
+      <img src={danceMagenta.src} className="dance dance-bottom" />
     </>
   );
 };
@@ -214,38 +228,39 @@ const AnswerQuestion = ({
         </>
       ) : (
         <>
-          <h1 className="text-center">
+          <h1 className="my-0 text-center">
             {playingAsSelf ? 'בתפקיד עצמך' : 'מתחזה ל' + playingAs}
           </h1>
           <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
           <div className="text-center text-lg">
             {game.players[playingAs].politics}
           </div>
-          <h1 className="text-center">השאלה</h1>
+          <h1 className="my-3 text-center">השאלה</h1>
           <div className="text-center text-xl">{game.question}</div>
+          <h1 className="my-3 text-center">
+            {
+              playingAsSelf
+                ? 'מה התשובה שלך?'
+                : `אם היית ${game.players[playingAs].id} מה היית עונה?` /* TODO: change to name */
+            }
+          </h1>
           <form className="form-control max-w-xl">
-            <label htmlFor="answer" className="label">
-              תשובתך:
-            </label>
-            <input
-              className="input input-bordered !outline-none"
-              id="answer"
-              type="text"
+            <textarea
+              id="politics"
+              className="input input-bordered !outline-none mx-auto"
               onChange={(e) => setAnswer(e.target.value)}
             />
-            <div className="pt-2">
-              <button
-                className="btn"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  answerQuestion.mutateAsync({
-                    gameId: game.id,
-                    playerId,
-                    answer,
-                  });
-                }}
-              />
-            </div>
+            <button
+              className="btn mx-auto"
+              onClick={async (e) => {
+                e.preventDefault();
+                answerQuestion.mutateAsync({
+                  gameId: game.id,
+                  playerId,
+                  answer,
+                });
+              }}
+            />
             <p>{time}</p>
           </form>
         </>
@@ -310,48 +325,40 @@ const RateAnswers = ({
     );
   return (
     <>
-      <h2>דרג.י את התשובה!</h2>
+      <h1 className="my-3 text-center">השאלה</h1>
+      <div className="text-center text-xl">{game.question}</div>
+      <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
+      <div className="text-center text-lg">
+        {game.players[answerToRate.playingAs].politics}
+      </div>
+      <h1 className="text-4xl text-center">&quot;</h1>
+      <div className="text-xl text-center">{answerToRate.answer}</div>
       {imposingSelf ? (
-        <p>השחקן התחזה אלייך!</p>
+        <p className="text-center">עד כמה טוב התחזו אלייך?</p>
       ) : (
-        <p>השחקן ענה בתור {answerToRate.playingAs}</p>
+        <p className="text-center">האם הם מחתזים???</p>
       )}
-      {!imposingSelf && (
-        <>
-          <p>ל{answerToRate.playingAs} יש את התיאור הבא:</p>
-          <blockquote>
-            {game.players[answerToRate.playingAs].politics}
-          </blockquote>
-        </>
-      )}
-      <p>הוא ענה:</p>
-      <blockquote>{answerToRate.answer}</blockquote>
-      {imposingSelf ? <p>עד כמה טוב התחזו אלייך?</p> : <p>האם הם מחתזים???</p>}
       <form className="form-control max-w-xl">
-        <label className="flex gap-2 content-between">
-          {imposingSelf ? <span>גרוע</span> : <span>!מתחזה</span>}
+        <label className="flex gap-2 content-between items-center">
+          <span>{imposingSelf ? 'פחות' : 'מתחזה!'}</span>
           <input
             type="range"
             min="-2"
             max="2"
             value={rating}
-            className="range"
+            className="mx-2"
             onChange={(e) => setRating(Number(e.target.value))}
           />
-          {imposingSelf ? <span>מצוין</span> : <span>מקורי</span>}
+          <span>{imposingSelf ? 'מצוין!' : 'מקורי'}</span>
         </label>
-        <div className="pt-2">
-          <button
-            className="btn"
-            onClick={(e) => {
-              e.preventDefault();
-              submitAnswer();
-            }}
-          >
-            שלח.י דירוג
-          </button>
-        </div>
-        <p>{time}</p>
+        <button
+          className="btn mx-auto my-10"
+          onClick={(e) => {
+            e.preventDefault();
+            submitAnswer();
+          }}
+        />
+        <h1>{time}</h1>
       </form>
       {lastAnswerWasImpostor !== undefined && (
         <p>התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!</p>
