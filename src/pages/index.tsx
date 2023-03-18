@@ -50,7 +50,7 @@ const HomePage = () => {
           <form className="join-form form-control gap-2">
             <input
               id="playerId"
-              className="input input-bordered !outline-none mx-auto"
+              className="input input-bordered !outline-none mx-auto text-center"
               type="text"
               placeholder="שם \ כינוי"
               value={userName}
