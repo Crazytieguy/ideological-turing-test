@@ -60,7 +60,7 @@ const HomePage = () => {
               id="politics"
               className="input input-bordered !outline-none mx-auto"
               value={politics}
-              placeholder="אני מאמין ב... אני בדרך כלל מצביע.ה.."
+              placeholder="34, הרצליה, מאמין ב... אני בדרך כלל מצביע.ה.."
               onChange={(e) => setPolitics(e.target.value)}
             />
             <button
@@ -208,7 +208,7 @@ const AnswerQuestion = ({
         </>
       ) : (
         <>
-          <h1 className="text-center">
+          <h1 className="my-0 text-center">
             {playingAsSelf ? 'בתפקיד עצמך' : 'מתחזה ל' + playingAs}
           </h1>
           <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
@@ -218,28 +218,22 @@ const AnswerQuestion = ({
           <h1 className="text-center">השאלה</h1>
           <div className="text-center text-xl">{game.question}</div>
           <form className="form-control max-w-xl">
-            <label htmlFor="answer" className="label">
-              תשובתך:
-            </label>
-            <input
-              className="input input-bordered !outline-none"
-              id="answer"
-              type="text"
+            <textarea
+              id="politics"
+              className="input input-bordered !outline-none mx-auto"
               onChange={(e) => setAnswer(e.target.value)}
             />
-            <div className="pt-2">
-              <button
-                className="btn"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  answerQuestion.mutateAsync({
-                    gameId: game.id,
-                    playerId,
-                    answer,
-                  });
-                }}
-              />
-            </div>
+            <button
+              className="btn mx-auto"
+              onClick={async (e) => {
+                e.preventDefault();
+                answerQuestion.mutateAsync({
+                  gameId: game.id,
+                  playerId,
+                  answer,
+                });
+              }}
+            />
             <p>{time}</p>
           </form>
         </>
