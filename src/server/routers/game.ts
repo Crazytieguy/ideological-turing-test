@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import type { Game } from '../../shared/game';
+import * as crypto from 'crypto';
 
 const questions: readonly string[] = [
   'האם הכנסת רשאית לחוקק כל חוק?',
