@@ -28,7 +28,7 @@ const HomePage = () => {
   return (
     <main
       dir="rtl"
-      className="game container mx-auto flex flex-col justify-center max-w-2xl p-8 2xl:px-0 prose"
+      className="game container mx-auto flex flex-col max-w-2xl p-8 2xl:px-0 prose"
     >
       {!joined || !sessionData || !userName || !politics ? (
         <>
@@ -238,7 +238,7 @@ const RateAnswers = ({
   const [index, setIndex] = useState(0);
   const [rating, setRating] = useState(0);
   const answersToRate = Object.entries(game.playerAnswers).filter(
-    ([id, { playingAs }]) => ![id, playingAs].includes(playerId),
+    ([id]) => id !== playerId,
   );
   let lastAnswerWasImpostor: boolean | undefined;
   if (index > 0) {
@@ -257,18 +257,29 @@ const RateAnswers = ({
       </>
     );
   const answerToRate = answersToRate[index][1];
+  const imposingSelf = answerToRate.playingAs === playerId;
   return (
     <>
       <h2>דרג.י את התשובה!</h2>
-      <p>השחקן ענה בתור {answerToRate.playingAs}</p>
-      <p>ל{answerToRate.playingAs} יש את התיאור הבא:</p>
-      <blockquote>{game.players[answerToRate.playingAs].politics}</blockquote>
+      {imposingSelf ? (
+        <p>השחקן התחזה אלייך!</p>
+      ) : (
+        <p>השחקן ענה בתור {answerToRate.playingAs}</p>
+      )}
+      {!imposingSelf && (
+        <>
+          <p>ל{answerToRate.playingAs} יש את התיאור הבא:</p>
+          <blockquote>
+            {game.players[answerToRate.playingAs].politics}
+          </blockquote>
+        </>
+      )}
       <p>הוא ענה:</p>
       <blockquote>{answerToRate.answer}</blockquote>
-      <p>האם הם מחתזים???</p>
+      {imposingSelf ? <p>עד כמה טוב התחזו אלייך?</p> : <p>האם הם מחתזים???</p>}
       <form className="form-control max-w-xl">
         <label className="flex gap-2 content-between">
-          <span>מתחזה!</span>
+          {imposingSelf ? <span>גרוע</span> : <span>!מתחזה</span>}
           <input
             type="range"
             min="-2"
@@ -277,7 +288,7 @@ const RateAnswers = ({
             className="range"
             onChange={(e) => setRating(Number(e.target.value))}
           />
-          <span>מקורי</span>
+          {imposingSelf ? <span>מצוין</span> : <span>מקורי</span>}
         </label>
         <div className="pt-2">
           <button
@@ -326,7 +337,6 @@ const Score = ({
   return (
     <>
       <h2>ניקוד!</h2>
-      <pre dir="ltr">{JSON.stringify(game.playerAnswers, null, 2)}</pre>
       <ul>
         {Object.entries(game.playerAnswers).map(
           ([id, { playingAs, ratings }]) => {
@@ -340,7 +350,12 @@ const Score = ({
                   {ratings
                     .sort((a, b) => b.rating - a.rating)
                     .map(({ rater, rating }) => (
-                      <li key={rater} className="px-4">
+                      <li
+                        key={rater}
+                        className={`px-4 ${
+                          rater === playingAs ? 'font-bold' : ''
+                        }`}
+                      >
                         {rater} דירג {rating}
                       </li>
                     ))}

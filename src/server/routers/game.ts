@@ -48,6 +48,9 @@ const finishedRatingAnswers = async (gameId: string) => {
     scores.atImposing[id] = 0;
     scores.total[id] = scores.total[id] || 0;
     for (const { rater, rating } of ratings) {
+      if (rater === playingAs) {
+        continue;
+      }
       scores.atImposing[id] += rating;
       scores.total[id] += rating;
       scores.atGuessing[rater] = scores.atGuessing[rater] || 0;
@@ -255,11 +258,10 @@ export const gameRouter = router({
           rating,
         });
         if (
-          Object.entries(game.playerAnswers).every(([player, answer]) => {
-            const isImposter = player !== answer.playingAs;
-            const expectedRatings =
-              Object.keys(game.players).length - 1 - (isImposter ? 1 : 0);
-            return answer.ratings.length === expectedRatings;
+          Object.entries(game.playerAnswers).every(([, answer]) => {
+            return (
+              answer.ratings.length === Object.keys(game.players).length - 1
+            );
           })
         ) {
           await finishedRatingAnswers(gameId);
