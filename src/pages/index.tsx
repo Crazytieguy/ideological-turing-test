@@ -179,7 +179,7 @@ const AnswerQuestion = ({
 }) => {
   const answerQuestion = trpc.game.answerQuestion.useMutation();
   const [answer, setAnswer] = useState('');
-  const [time] = useTimer(10);
+  const [time] = useTimer(60);
   const { playingAs } = game.assignments[playerId];
   const playingAsSelf = playingAs === playerId;
   const alreadyAnswered = game.playerAnswers[playerId];
@@ -258,7 +258,7 @@ const RateAnswers = ({
   const rateAnswer = trpc.game.rateAnswer.useMutation();
   const [index, setIndex] = useState(0);
   const [rating, setRating] = useState(0);
-  const [time, setTime] = useTimer(10);
+  const [time, setTime] = useTimer(30);
   const answersToRate = Object.entries(game.playerAnswers).filter(
     ([id]) => id !== playerId,
   );
@@ -270,7 +270,10 @@ const RateAnswers = ({
   const answerToRate = answersToRate[index] && answersToRate[index][1];
   const imposingSelf = answerToRate?.playingAs === playerId;
   const submitAnswer = useCallback(() => {
-    if (['idle', 'success'].includes(rateAnswer.status)) {
+    if (
+      ['idle', 'success'].includes(rateAnswer.status) &&
+      answersToRate[index]
+    ) {
       rateAnswer.mutateAsync({
         gameId: game.id,
         rating: {
@@ -280,7 +283,7 @@ const RateAnswers = ({
         },
       });
       setIndex(index + 1);
-      setTime(10);
+      setTime(30);
     }
   }, [game.id, rating, playerId, answersToRate, index, rateAnswer, setTime]);
   useEffect(() => {
