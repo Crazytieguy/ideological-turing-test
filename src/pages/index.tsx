@@ -1,10 +1,21 @@
 import { signIn, useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Game } from '../shared/game';
 import { trpc } from '../utils/trpc';
 import avatar1 from '../images/avatar1-motion.svg';
 
 const AVATARS = [avatar1];
+
+const useTimer = (timeout: number) => {
+  const [time, setTime] = useState(timeout);
+  useEffect(() => {
+    if (time > 0) {
+      const timer = setTimeout(() => setTime(time - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [time, timeout]);
+  return [time, setTime] as const;
+};
 
 const HomePage = () => {
   const updateUser = trpc.user.updateUser.useMutation();
@@ -168,12 +179,22 @@ const AnswerQuestion = ({
 }) => {
   const answerQuestion = trpc.game.answerQuestion.useMutation();
   const [answer, setAnswer] = useState('');
+  const [time] = useTimer(10);
   const { playingAs } = game.assignments[playerId];
   const playingAsSelf = playingAs === playerId;
   const alreadyAnswered = game.playerAnswers[playerId];
   const waitingFor = Object.values(game.players).filter(
     ({ id }) => !game.playerAnswers[id],
   );
+  useEffect(() => {
+    if (time === 0 && answerQuestion.status === 'idle') {
+      answerQuestion.mutateAsync({
+        gameId: game.id,
+        playerId,
+        answer,
+      });
+    }
+  }, [time, answer, game.id, playerId, answerQuestion]);
   return (
     <form className="form-control">
       {alreadyAnswered ? (
@@ -219,6 +240,7 @@ const AnswerQuestion = ({
                 }}
               />
             </div>
+            <p>{time}</p>
           </form>
         </>
       )}
@@ -236,6 +258,7 @@ const RateAnswers = ({
   const rateAnswer = trpc.game.rateAnswer.useMutation();
   const [index, setIndex] = useState(0);
   const [rating, setRating] = useState(0);
+  const [time, setTime] = useTimer(10);
   const answersToRate = Object.entries(game.playerAnswers).filter(
     ([id]) => id !== playerId,
   );
@@ -244,6 +267,27 @@ const RateAnswers = ({
     const [id, { playingAs }] = answersToRate[index - 1];
     lastAnswerWasImpostor = id !== playingAs;
   }
+  const answerToRate = answersToRate[index] && answersToRate[index][1];
+  const imposingSelf = answerToRate?.playingAs === playerId;
+  const submitAnswer = useCallback(() => {
+    if (['idle', 'success'].includes(rateAnswer.status)) {
+      rateAnswer.mutateAsync({
+        gameId: game.id,
+        rating: {
+          rating,
+          rater: playerId,
+          playerBeingRated: answersToRate[index][0],
+        },
+      });
+      setIndex(index + 1);
+      setTime(10);
+    }
+  }, [game.id, rating, playerId, answersToRate, index, rateAnswer, setTime]);
+  useEffect(() => {
+    if (time === 0) {
+      submitAnswer();
+    }
+  }, [time, submitAnswer]);
   if (!answersToRate[index])
     return (
       <>
@@ -255,8 +299,6 @@ const RateAnswers = ({
         )}
       </>
     );
-  const answerToRate = answersToRate[index][1];
-  const imposingSelf = answerToRate.playingAs === playerId;
   return (
     <>
       <h2>דרג.י את התשובה!</h2>
@@ -292,22 +334,15 @@ const RateAnswers = ({
         <div className="pt-2">
           <button
             className="btn"
-            onClick={async (e) => {
+            onClick={(e) => {
               e.preventDefault();
-              rateAnswer.mutateAsync({
-                gameId: game.id,
-                rating: {
-                  rating,
-                  rater: playerId,
-                  playerBeingRated: answersToRate[index][0],
-                },
-              });
-              setIndex(index + 1);
+              submitAnswer();
             }}
           >
             שלח.י דירוג
           </button>
         </div>
+        <p>{time}</p>
       </form>
       {lastAnswerWasImpostor !== undefined && (
         <p>התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!</p>
@@ -323,16 +358,12 @@ const Score = ({
   game: Game & { phase: 'SCORE' };
   joinAnotherGame: () => void;
 }) => {
-  const [secondsRemaining, setSecondsRemaining] = useState(10);
+  const [time] = useTimer(10);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSecondsRemaining((s) => s - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  if (secondsRemaining === 0) {
-    joinAnotherGame();
-  }
+    if (time === 0) {
+      joinAnotherGame();
+    }
+  }, [time, joinAnotherGame]);
   return (
     <>
       <h2>ניקוד!</h2>
@@ -384,7 +415,7 @@ const Score = ({
             </li>
           ))}
       </ul>
-      <p>המשחק הבא יתחיל בעוד: {secondsRemaining}</p>
+      <p>המשחק הבא יתחיל בעוד: {time}</p>
     </>
   );
 };

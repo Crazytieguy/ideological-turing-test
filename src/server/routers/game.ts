@@ -207,7 +207,8 @@ export const gameRouter = router({
     .mutation(({ input: { gameId, playerId, answer } }) => {
       let game = games[gameId];
       if (game.phase !== 'ANSWER_QUESTION') {
-        throw new Error('Game not in ANSWER_QUESTION phase');
+        console.warn('Game not in ANSWER_QUESTION phase');
+        return;
       }
       const playerAssignment = game.assignments[playerId];
       if (!playerAssignment) {
@@ -228,6 +229,7 @@ export const gameRouter = router({
         } satisfies Game;
         games[gameId] = game;
         eventEmmiter.emit(gameId, game);
+        return;
       }
       eventEmmiter.emit(gameId, game);
     }),
