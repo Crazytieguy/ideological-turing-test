@@ -142,9 +142,6 @@ const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
   const startGame = trpc.game.startGame.useMutation();
   return (
     <>
-      <h1 className="mx-auto">
-        מזהה משחק: <span className="text-red-400">{game.id}</span>
-      </h1>
       <p className="mx-auto">
         הצטרפו {Object.keys(game.players).length} שחקנים
       </p>
@@ -239,11 +236,26 @@ const RateAnswers = ({
 }) => {
   const rateAnswer = trpc.game.rateAnswer.useMutation();
   const [index, setIndex] = useState(0);
-  const [rating, setRating] = useState(2);
+  const [rating, setRating] = useState(0);
   const answersToRate = Object.entries(game.playerAnswers).filter(
     ([id, { playingAs }]) => ![id, playingAs].includes(playerId),
   );
-  if (!answersToRate[index]) return <p>סיימת לדרג</p>;
+  let lastAnswerWasImpostor: boolean | undefined;
+  if (index > 0) {
+    const [id, { playingAs }] = answersToRate[index - 1];
+    lastAnswerWasImpostor = id !== playingAs;
+  }
+  if (!answersToRate[index])
+    return (
+      <>
+        <p>סיימת לדרג</p>
+        {lastAnswerWasImpostor !== undefined && (
+          <p>
+            התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!
+          </p>
+        )}
+      </>
+    );
   const answerToRate = answersToRate[index][1];
   return (
     <>
@@ -287,6 +299,9 @@ const RateAnswers = ({
           </button>
         </div>
       </form>
+      {lastAnswerWasImpostor !== undefined && (
+        <p>התשובה הקודמת הייתה {lastAnswerWasImpostor ? 'מתחזת' : 'מקורית'}!</p>
+      )}
     </>
   );
 };
