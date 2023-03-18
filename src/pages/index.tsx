@@ -96,7 +96,7 @@ const JoinGame = ({
       joinGame.mutateAsync({ gameId, playerId, politics }).then(setGame);
     }
   }, [game, gameId, playerId, politics, joinGame]);
-  if (!game) return <p>Joining Game...</p>;
+  if (!game) return <p>מצתרף למשחק...</p>;
   return <Play {...{ game, playerId, politics }} />;
 };
 
@@ -111,12 +111,6 @@ const Play = ({
   trpc.game.subscribeToGame.useSubscription(
     { gameId: game.id },
     {
-      // onStarted: async () => {
-      //   console.log('Subscription started');
-      //   try {
-      //     await joinGame.mutateAsync({ gameId, playerId, politics });
-      //   } catch {}
-      // },
       onData(state) {
         console.log('Subscription data:', state);
         setGame(state);
@@ -181,7 +175,7 @@ const AnswerQuestion = ({
     <form className="form-control">
       {alreadyAnswered ? (
         <>
-          <p>Waiting for</p>
+          <p>מחכים ל</p>
           <ul>
             {waitingFor.map(({ id }) => (
               <li key={id}>{id}</li>
@@ -191,23 +185,19 @@ const AnswerQuestion = ({
       ) : (
         <>
           <p>
-            You are playing as{' '}
-            <em>{playingAsSelf ? 'Yourself!' : playingAs}</em>
+            את.ה משחק.ת בתור: <em>{playingAsSelf ? 'עצמך!' : playingAs}</em>
           </p>
           {!playingAsSelf && (
             <>
-              <p>
-                {playingAs}
-                {"'"}s politics are:
-              </p>
+              <p>התיאור של {playingAs} הוא:</p>
               <blockquote>{game.players[playingAs].politics}</blockquote>
             </>
           )}
-          <p>The question is:</p>
+          <p>השאלה:</p>
           <blockquote>{game.question}</blockquote>
           <form className="form-control max-w-xl">
             <label htmlFor="answer" className="label">
-              Answer:
+              תשובתך:
             </label>
             <input
               className="input input-bordered !outline-none"
@@ -227,7 +217,7 @@ const AnswerQuestion = ({
                   });
                 }}
               >
-                Answer Question
+                שלח.י תשובה
               </button>
             </div>
           </form>
@@ -250,20 +240,20 @@ const RateAnswers = ({
   const answersToRate = Object.entries(game.playerAnswers).filter(
     ([id, { playingAs }]) => ![id, playingAs].includes(playerId),
   );
-  if (!answersToRate[index]) return <p>Done rating</p>;
+  if (!answersToRate[index]) return <p>סיימת לדרג</p>;
   const answerToRate = answersToRate[index][1];
   return (
     <>
-      <h2>Rate the answer!</h2>
-      <p>The player answered as {answerToRate.playingAs}</p>
-      <p>{answerToRate.playingAs} has these politics:</p>
+      <h2>דרג.י את התשובה!</h2>
+      <p>השחקן ענה בתור {answerToRate.playingAs}</p>
+      <p>ל{answerToRate.playingAs} יש את התיאור הבא:</p>
       <blockquote>{game.players[answerToRate.playingAs].politics}</blockquote>
-      <p>They answered:</p>
+      <p>הוא ענה:</p>
       <blockquote>{answerToRate.answer}</blockquote>
-      <p>Are they an impostor???</p>
+      <p>האם הם מחתזים???</p>
       <form className="form-control max-w-xl">
         <label className="flex gap-2 content-between">
-          <span>Impostor!</span>
+          <span>מתחזה!</span>
           <input
             type="range"
             min="-2"
@@ -272,7 +262,7 @@ const RateAnswers = ({
             className="range"
             onChange={(e) => setRating(Number(e.target.value))}
           />
-          <span>The original</span>
+          <span>מקורי</span>
         </label>
         <div className="pt-2">
           <button
@@ -290,7 +280,7 @@ const RateAnswers = ({
               setIndex(index + 1);
             }}
           >
-            Submit Rating
+            שלח.י דירוג
           </button>
         </div>
       </form>
