@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Game } from '../shared/game';
 import { trpc } from '../utils/trpc';
 import avatar1 from '../images/avatar1-motion.svg';
+import danceGreen from '../images/dance-green.gif';
+import danceMagenta from '../images/dance-magenta.gif';
 
 const AVATARS = [avatar1];
 
@@ -154,21 +156,30 @@ const Play = ({
 
 const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
   const startGame = trpc.game.startGame.useMutation();
+  const numJoined = Object.keys(game.players).length;
   return (
     <>
-      <p className="mx-auto">
-        הצטרפו {Object.keys(game.players).length} שחקנים
-      </p>
-      {Object.keys(game.players).length >= 3 && (
-        <button
-          className="btn mx-auto"
-          onClick={() => {
-            console.log('startGame', { gameId: game.id });
-            startGame.mutate({ gameId: game.id });
-          }}
-        />
-      )}
-      ;
+      <div className="mx-auto my-auto center-on-top">
+        <h1 className="mx-auto my-3">תיכף כולם יצטרפו</h1>
+        {numJoined > 1 ? (
+          <p className="mx-auto">
+            הצטרפו {numJoined} שחקנים, צריך לפחות 3 כדי לשחק
+          </p>
+        ) : (
+          <p className="mx-auto">כרגע אין פה אף אחד חוץ ממך</p>
+        )}
+        {numJoined >= 3 && (
+          <button
+            className="btn mx-auto"
+            onClick={() => {
+              console.log('startGame', { gameId: game.id });
+              startGame.mutate({ gameId: game.id });
+            }}
+          />
+        )}
+      </div>
+      <img src={danceGreen.src} className="dance dance-top" />
+      <img src={danceMagenta.src} className="dance dance-bottom" />
     </>
   );
 };

@@ -33,6 +33,33 @@ div#__next > main {
   background-image: url('../images/background-motion.svg');
   background-size: cover;
 
+  .center-on-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+  .dance {
+    position: fixed;
+    right: 0;
+    left: 0;
+    margin: auto;
+    height: 40%;
+  }
+  .dance-top {
+    top: 0;
+    transform: rotateZ(180deg);
+  }
+  .dance-bottom {
+    bottom: 0;
+  }
+
   input[type='text'],
   textarea,
   button {
