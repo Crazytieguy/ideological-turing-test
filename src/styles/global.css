@@ -61,7 +61,7 @@ div#__next > main {
   button {
     background-image: url('../images/button-go-motion.svg');
     width: 100px;
-    background-color: transparent;
+    background-color: transparent !important;
     &[disabled] {
       opacity: 0.5;
     }
