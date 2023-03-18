@@ -159,13 +159,16 @@ const Lobby = ({ game }: { game: Game & { phase: 'LOBBY' } }) => {
       <p className="mx-auto">
         הצטרפו {Object.keys(game.players).length} שחקנים
       </p>
-      <button
-        className="btn mx-auto"
-        onClick={() => {
-          console.log('startGame', { gameId: game.id });
-          startGame.mutate({ gameId: game.id });
-        }}
-      />
+      {Object.keys(game.players).length >= 3 && (
+        <button
+          className="btn mx-auto"
+          onClick={() => {
+            console.log('startGame', { gameId: game.id });
+            startGame.mutate({ gameId: game.id });
+          }}
+        />
+      )}
+      ;
     </>
   );
 };
