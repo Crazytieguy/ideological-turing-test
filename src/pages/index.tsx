@@ -23,7 +23,7 @@ const HomePage = () => {
   return (
     <main
       dir="rtl"
-      className="container mx-auto flex flex-col justify-center max-w-2xl p-8 2xl:px-0 prose bg-cyan"
+      className="game container mx-auto flex flex-col justify-center max-w-2xl p-8 2xl:px-0 prose"
     >
       {!joined || !sessionData || !userName || !gameId || !politics ? (
         <>

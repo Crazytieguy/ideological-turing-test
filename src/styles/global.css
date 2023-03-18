@@ -28,36 +28,42 @@ div#__next > main {
   height: 100%;
 }
 
-input[type='text'],
-textarea,
-button {
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-color: transparent;
-  --rounded-btn: 0;
-  border: none;
-  border-radius: 0;
-  width: 300px;
-  padding: 20px;
-  font-size: 1.5rem;
-}
+.game {
+  background-color: cyan;
+  background-image: url('../images/background-motion.svg');
+  background-size: cover;
 
-input[type='text'] {
-  background-image: url('../images/input-text-motion.svg');
-  height: 61px;
-}
+  input[type='text'],
+  textarea,
+  button {
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    --rounded-btn: 0;
+    border: none;
+    border-radius: 0;
+    width: 300px;
+    padding: 20px;
+    font-size: 1.5rem;
+  }
 
-textarea {
-  background-image: url('../images/textarea-motion.svg');
-  height: 200px;
-  resize: none;
-}
+  input[type='text'] {
+    background-image: url('../images/input-text-motion.svg');
+    height: 61px;
+  }
 
-button {
-  background-image: url('../images/button-go-motion.svg');
-  width: 100px;
-  background-color: transparent !important;
-  &[disabled] {
-    opacity: 0.5;
+  textarea {
+    background-image: url('../images/textarea-motion.svg');
+    height: 200px;
+    resize: none;
+  }
+
+  button {
+    background-image: url('../images/button-go-motion.svg');
+    width: 100px;
+    background-color: transparent;
+    &[disabled] {
+      opacity: 0.5;
+    }
   }
 }
