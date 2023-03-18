@@ -96,16 +96,19 @@ const JoinGame = ({
       joinGame.mutateAsync({ gameId, playerId, politics }).then(setGame);
     }
   }, [game, gameId, playerId, politics, joinGame]);
+  const joinAnotherGame = () => setGame(undefined);
   if (!game) return <p>מצתרף למשחק...</p>;
-  return <Play {...{ game, playerId, politics }} />;
+  return <Play {...{ game, playerId, joinAnotherGame }} />;
 };
 
 const Play = ({
   game: InitialGame,
   playerId,
+  joinAnotherGame,
 }: {
   game: Game;
   playerId: string;
+  joinAnotherGame: () => void;
 }) => {
   const [game, setGame] = useState<Game>(InitialGame);
   trpc.game.subscribeToGame.useSubscription(
@@ -129,7 +132,7 @@ const Play = ({
       ) : game.phase === 'RATE_ANSWERS' ? (
         <RateAnswers game={game} playerId={playerId} />
       ) : game.phase === 'SCORE' ? (
-        <Score game={game} />
+        <Score game={game} joinAnotherGame={joinAnotherGame} />
       ) : null}
     </>
   );
@@ -288,11 +291,27 @@ const RateAnswers = ({
   );
 };
 
-const Score = ({ game }: { game: Game & { phase: 'SCORE' } }) => {
+const Score = ({
+  game,
+  joinAnotherGame,
+}: {
+  game: Game & { phase: 'SCORE' };
+  joinAnotherGame: () => void;
+}) => {
   const scores = Object.entries(game.scores).sort(([, a], [, b]) => b - a);
+  const [secondsRemaining, setSecondsRemaining] = useState(10);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsRemaining((s) => s - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  if (secondsRemaining === 0) {
+    joinAnotherGame();
+  }
   return (
     <>
-      <h2>Scores!</h2>
+      <h2>ניקוד!</h2>
       <ol>
         {scores.map(([id, score]) => (
           <li key={id}>
@@ -300,6 +319,7 @@ const Score = ({ game }: { game: Game & { phase: 'SCORE' } }) => {
           </li>
         ))}
       </ol>
+      <p>המשחק הבא יתחיל בעוד: {secondsRemaining}</p>
     </>
   );
 };
