@@ -191,14 +191,11 @@ const AnswerQuestion = ({
             {playingAsSelf ? 'בתפקיד עצמך' : 'מתחזה ל' + playingAs}
           </h1>
           <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
-          {!playingAsSelf && (
-            <>
-              <p>התיאור של {playingAs} הוא:</p>
-              <blockquote>{game.players[playingAs].politics}</blockquote>
-            </>
-          )}
-          <p>השאלה:</p>
-          <blockquote>{game.question}</blockquote>
+          <div className="text-center text-lg">
+            {game.players[playingAs].politics}
+          </div>
+          <h1 className="text-center">השאלה</h1>
+          <div className="text-center text-xl">{game.question}</div>
           <form className="form-control max-w-xl">
             <label htmlFor="answer" className="label">
               תשובתך:
@@ -220,9 +217,7 @@ const AnswerQuestion = ({
                     answer,
                   });
                 }}
-              >
-                שלח.י תשובה
-              </button>
+              />
             </div>
           </form>
         </>
