@@ -60,7 +60,7 @@ const HomePage = () => {
               id="politics"
               className="input input-bordered !outline-none mx-auto"
               value={politics}
-              placeholder="34, הרצליה, מאמין ב... אני בדרך כלל מצביע.ה.."
+              placeholder="תיאור עצמי (לדוגמה: שקד, 28, תל אביבית, הצבעתי עבודה וחשוב לי זכויות נשים)"
               onChange={(e) => setPolitics(e.target.value)}
             />
             <button
@@ -215,8 +215,15 @@ const AnswerQuestion = ({
           <div className="text-center text-lg">
             {game.players[playingAs].politics}
           </div>
-          <h1 className="text-center">השאלה</h1>
+          <h1 className="my-3 text-center">השאלה</h1>
           <div className="text-center text-xl">{game.question}</div>
+          <h1 className="my-3 text-center">
+            {
+              playingAsSelf
+                ? 'מה התשובה שלך?'
+                : `אם היית ${game.players[playingAs].id} מה היית עונה?` /* TODO: change to name */
+            }
+          </h1>
           <form className="form-control max-w-xl">
             <textarea
               id="politics"
