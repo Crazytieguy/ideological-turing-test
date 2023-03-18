@@ -67,3 +67,27 @@ div#__next > main {
     }
   }
 }
+
+.right-firework {
+  background-image: url('../images/fireworks/right.gif');
+  background-size: contain;
+  height: 100vh;
+  width: 20vw;
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  right: -1rem;
+  overflow-x: hidden;
+}
+
+.left-firework {
+  background-image: url('../images/fireworks/left.gif');
+  background-size: contain;
+  height: 100vh;
+  width: 20vw;
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  left: -1rem;
+  overflow-x: hidden;
+}

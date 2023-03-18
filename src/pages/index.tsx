@@ -3,8 +3,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Game } from '../shared/game';
 import { trpc } from '../utils/trpc';
 import avatar1 from '../images/avatar1-motion.svg';
+import number1 from '../images/numbers/Untitled-34-18.png';
+import number2 from '../images/numbers/Untitled-34-19.png';
+import number3 from '../images/numbers/Untitled-34-20.png';
+import number4 from '../images/numbers/Untitled-34-21.png';
+import number5 from '../images/numbers/Untitled-34-22.png';
 
 const AVATARS = [avatar1];
+const numbers = [number1, number2, number3, number4, number5];
 
 const useTimer = (timeout: number) => {
   const [time, setTime] = useState(timeout);
@@ -362,6 +368,7 @@ const Score = ({
   joinAnotherGame: () => void;
 }) => {
   const [time] = useTimer(10);
+  const [showDetails, setShowDetails] = useState(false);
   useEffect(() => {
     if (time === 0) {
       joinAnotherGame();
@@ -369,56 +376,77 @@ const Score = ({
   }, [time, joinAnotherGame]);
   return (
     <>
-      <h2>ניקוד!</h2>
-      <ul>
-        {Object.entries(game.playerAnswers).map(
-          ([id, { playingAs, ratings }]) => {
-            const wasImpostor = id !== playingAs;
-            return (
-              <li key={id}>
-                <p>
-                  {id} {wasImpostor ? `התחזה ל ${playingAs}` : 'שיחק את עצמו'}
-                </p>
-                <ul className="list-none flex">
-                  {ratings
-                    .sort((a, b) => b.rating - a.rating)
-                    .map(({ rater, rating }) => (
-                      <li
-                        key={rater}
-                        className={`px-4 ${
-                          rater === playingAs ? 'font-bold' : ''
-                        }`}
-                      >
-                        {rater} דירג {rating}
-                      </li>
-                    ))}
-                </ul>
-              </li>
-            );
-          },
-        )}
-      </ul>
-      <p>פרס המתחזה</p>
-      <ul className="list-none">
-        {Object.entries(game.scores.atImposing)
-          .sort(([, a], [, b]) => b - a)
-          .map(([player, score]) => (
-            <li key={player}>
-              {player} {score}
-            </li>
-          ))}
-      </ul>
-      <p>פרס הבלש</p>
-      <ul className="list-none">
-        {Object.entries(game.scores.atGuessing)
-          .sort(([, a], [, b]) => b - a)
-          .map(([player, score]) => (
-            <li key={player}>
-              {player} {score}
-            </li>
-          ))}
-      </ul>
-      <p>המשחק הבא יתחיל בעוד: {time}</p>
+      <div className="right-firework" />
+      <div className="left-firework" />
+      <h1 className="text-center">תוצאות!</h1>
+      {!showDetails ? (
+        <>
+          <h2 className="text-center my-2">פרס המתחזה</h2>
+          <ul className="list-none">
+            {Object.entries(game.scores.atImposing)
+              .sort(([, a], [, b]) => b - a)
+              .map(([player, score], i) => (
+                <li className="text-center text-lg px-10" key={i}>
+                  <img
+                    src={numbers[i].src}
+                    className="inline w-6 h-6 mx-2 my-0"
+                  />
+                  {player} התחזה ל{game.playerAnswers[player].playingAs} ו
+                  {score >= 0 ? 'קיבל' : 'הפסיד'} {Math.abs(score)} נקודות
+                </li>
+              ))}
+          </ul>
+          <h2 className="text-center my-2">פרס הבלש</h2>
+          <ul className="list-none">
+            {Object.entries(game.scores.atGuessing)
+              .sort(([, a], [, b]) => b - a)
+              .map(([player, score], i) => (
+                <li className="text-center text-lg" key={i}>
+                  <img
+                    src={numbers[i].src}
+                    className="inline w-6 h-6 mx-2 my-0"
+                  />
+                  {player} {score >= 0 ? 'קיבל' : 'הפסיד'} {Math.abs(score)}{' '}
+                  נקודות
+                </li>
+              ))}
+          </ul>
+        </>
+      ) : (
+        <ul className="mx-auto list-none">
+          {Object.entries(game.playerAnswers).map(
+            ([id, { playingAs, ratings }]) => {
+              const wasImpostor = id !== playingAs;
+              return (
+                <li key={id}>
+                  <h2 className="text-center">
+                    {id} {wasImpostor ? `התחזה ל${playingAs}` : 'שיחק את עצמו'}
+                  </h2>
+                  <ul className="list-none flex">
+                    {ratings
+                      .sort((a, b) => b.rating - a.rating)
+                      .map(({ rater, rating }) => (
+                        <li
+                          key={rater}
+                          className={`px-4 ${
+                            rater === playingAs ? 'font-bold' : ''
+                          }`}
+                        >
+                          {rater} דירג {rating}
+                        </li>
+                      ))}
+                  </ul>
+                </li>
+              );
+            },
+          )}
+        </ul>
+      )}
+      <button
+        className="mx-auto"
+        onClick={() => setShowDetails(!showDetails)}
+      ></button>
+      <p className="text-center">המשחק הבא יתחיל בעוד: {time}</p>
     </>
   );
 };
