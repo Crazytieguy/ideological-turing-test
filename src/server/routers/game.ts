@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import type { Game } from '../../shared/game';
 import * as crypto from 'crypto';
-import { prisma } from 'server/prisma';
+import { prisma } from '../../server/prisma';
 import { Prisma } from '@prisma/client';
 
 const questions: readonly string[] = [
