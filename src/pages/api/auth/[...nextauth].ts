@@ -1,53 +1,7 @@
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import NextAuth, { DefaultSession } from 'next-auth';
-import { AppProviders } from 'next-auth/providers';
-// import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from 'server/prisma';
 
-let useMockProvider = process.env.NODE_ENV === 'test';
-const { GOOGLE_CLIENT_ID, GOOGLE_SECRET, NODE_ENV, APP_ENV } = process.env;
-if (
-  (NODE_ENV !== 'production' || APP_ENV === 'test') &&
-  (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET)
-) {
-  console.log('⚠️ Using mocked Google auth correct credentials were not added');
-  useMockProvider = true;
-}
-const providers: AppProviders = [];
-if (useMockProvider) {
-  console.log("mock provider doesn't actually work");
-  // providers.push(
-  //   CredentialsProvider({
-  //     id: 'google',
-  //     name: 'Mocked Google',
-  //     async authorize(credentials) {
-  //       if (credentials) {
-  //         const user = {
-  //           id: credentials.name,
-  //           name: credentials.name,
-  //           email: credentials.name,
-  //         };
-  //         return user;
-  //       }
-  //       return null;
-  //     },
-  //     credentials: {
-  //       name: { type: 'test' },
-  //     },
-  //   }),
-  // );
-} else {
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_SECRET) {
-    throw new Error('GOOGLE_CLIENT_ID and GOOGLE_SECRET must be set');
-  }
-  providers.push(
-    GoogleProvider({
-      clientId: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_SECRET,
-    }),
-  );
-}
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -58,7 +12,7 @@ declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      politics: string | undefined;
+      politics: string | undefined | null;
       totalScore: number;
     } & DefaultSession['user'];
   }
@@ -69,17 +23,52 @@ declare module 'next-auth' {
   }
 }
 
+declare module 'next-auth/jwt' {
+  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
+  interface JWT {
+    /** OpenID ID Token */
+    userId: string;
+  }
+}
+
 export default NextAuth({
-  // Configure one or more authentication providers
-  providers,
-  adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: 'jwt',
+  },
+  providers: [
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Credentials',
+      credentials: {},
+      async authorize(creds, req) {
+        console.log('in authorize', { req });
+        // random id
+        return {
+          id: crypto.randomUUID(),
+          politics: undefined,
+          totalScore: 0,
+        };
+      },
+    }),
+  ],
   callbacks: {
-    session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-        session.user.politics = user.politics;
-        session.user.totalScore = user.totalScore;
+    async jwt({ token, user }) {
+      if (user) {
+        token.userId = user.id;
       }
+      return token;
+    },
+    async session({ session, token }) {
+      let user = await prisma.user.findUnique({
+        where: { id: token.userId },
+      });
+      if (!user) {
+        user = await prisma.user.create({ data: { id: token.userId } });
+      }
+      session.user.id = user.id;
+      session.user.name = user.name;
+      session.user.politics = user.politics;
+      session.user.totalScore = user.totalScore;
       return session;
     },
   },

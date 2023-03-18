@@ -1,47 +1,31 @@
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { Game } from '../shared/game';
 import { trpc } from '../utils/trpc';
 
 const HomePage = () => {
-  const [playerId, setPlayerId] = useState<string | undefined>();
+  const updateUser = trpc.user.updateUser.useMutation();
+  const { data: sessionData, status } = useSession();
   const [gameId, setGameId] = useState<string | undefined>();
   const [joined, setJoined] = useState<boolean>(false);
-  const changePolitics = trpc.user.changePolitics.useMutation();
-  const { data: sessionData } = useSession();
-  const [politics, setPolitics] = useState<string | undefined>(
+  const [userName, setUserName] = useState<string | null | undefined>(
+    sessionData?.user?.name,
+  );
+  const [politics, setPolitics] = useState<string | null | undefined>(
     sessionData?.user?.politics,
   );
+  useEffect(() => {
+    if (status !== 'loading' && !sessionData?.user.id) {
+      signIn('credentials', { redirect: false });
+    }
+  }, [status, sessionData]);
 
   return (
     <main className="container mx-auto max-w-2xl p-8 2xl:px-0 prose">
-      {!joined || !playerId || !gameId || !politics ? (
+      {!joined || !sessionData || !userName || !gameId || !politics ? (
         <>
-          {sessionData ? (
-            <div className="flex justify-between">
-              <button className="btn" onClick={() => signOut()}>
-                Sign out
-              </button>
-              <p>Logged in as {sessionData.user.email}</p>
-              <p>Your score is {sessionData.user.totalScore}</p>
-            </div>
-          ) : (
-            <button className="btn" onClick={() => signIn('google')}>
-              Sign in
-            </button>
-          )}
           <h1 className="text-center">Join Game</h1>
           <form className="form-control gap-2">
-            <label htmlFor="playerId" className="label">
-              Enter your name:
-            </label>
-            <input
-              id="playerId"
-              className="input input-bordered"
-              type="text"
-              onChange={(e) => setPlayerId(e.target.value)}
-            />
-
             <label htmlFor="gameId" className="label">
               Enter a game id:
             </label>
@@ -51,6 +35,19 @@ const HomePage = () => {
               type="text"
               onChange={(e) => setGameId(e.target.value)}
             />
+            {!sessionData?.user?.name && (
+              <>
+                <label htmlFor="userName" className="label">
+                  Enter your name:
+                </label>
+                <input
+                  id="userName"
+                  className="input input-bordered"
+                  type="text"
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              </>
+            )}
             {!sessionData?.user?.politics && (
               <>
                 <label htmlFor="politics" className="label">
@@ -66,14 +63,20 @@ const HomePage = () => {
             )}
             <button
               className="btn"
-              disabled={!playerId || !gameId || !politics}
+              disabled={
+                !sessionData?.user.id || !userName || !gameId || !politics
+              }
               onClick={async (e) => {
-                if (!politics) {
+                if (!politics || !userName) {
                   return;
                 }
                 e.preventDefault();
-                if (sessionData && politics !== sessionData.user.politics) {
-                  await changePolitics.mutateAsync({ politics });
+                if (
+                  sessionData?.user.id &&
+                  (politics !== sessionData.user.politics ||
+                    userName !== sessionData.user.name)
+                ) {
+                  await updateUser.mutateAsync({ politics, name: userName });
                 }
                 setJoined(true);
               }}
@@ -83,7 +86,7 @@ const HomePage = () => {
           </form>
         </>
       ) : (
-        <Play {...{ playerId, gameId, politics }} />
+        <Play {...{ gameId, politics, playerId: userName }} />
       )}
     </main>
   );
