@@ -2,6 +2,9 @@ import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Game } from '../shared/game';
 import { trpc } from '../utils/trpc';
+import avatar1 from '../images/avatar1-motion.svg';
+
+const AVATARS = [avatar1];
 
 const HomePage = () => {
   const updateUser = trpc.user.updateUser.useMutation();
@@ -97,7 +100,7 @@ const JoinGame = ({
     }
   }, [game, gameId, playerId, politics, joinGame]);
   const joinAnotherGame = () => setGame(undefined);
-  if (!game) return <p>מצתרף למשחק...</p>;
+  if (!game) return <p>מצטרף למשחק...</p>;
   return <Play {...{ game, playerId, joinAnotherGame }} />;
 };
 
@@ -184,9 +187,10 @@ const AnswerQuestion = ({
         </>
       ) : (
         <>
-          <p>
-            את.ה משחק.ת בתור: <em>{playingAsSelf ? 'עצמך!' : playingAs}</em>
-          </p>
+          <h1 className="text-center">
+            {playingAsSelf ? 'בתפקיד עצמך' : 'מתחזה ל' + playingAs}
+          </h1>
+          <img src={AVATARS[0].src} alt="avatar" className="mx-auto w-2/6" />
           {!playingAsSelf && (
             <>
               <p>התיאור של {playingAs} הוא:</p>
