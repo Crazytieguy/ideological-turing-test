@@ -54,6 +54,32 @@ const finishedRatingAnswers = (gameId: string) => {
   eventEmmiter.emit(gameId, nextGame);
 };
 
+function startGame(gameId: string) {
+  const game = games[gameId];
+  if (game.phase !== 'LOBBY') {
+    throw new Error('Game already started');
+  }
+  if (gameId === publicLobbyId) {
+    publicLobbyId = undefined;
+  }
+  const playerIds = Object.keys(game.players);
+  const assignments = Object.create(null);
+  for (const playerId of Object.keys(game.players)) {
+    // select a random player id
+    const playingAs = playerIds[Math.floor(Math.random() * playerIds.length)];
+    assignments[playerId] = { playingAs };
+  }
+  const nextGame = {
+    ...game,
+    phase: 'ANSWER_QUESTION',
+    assignments,
+    playerAnswers: Object.create(null),
+  } satisfies Game;
+  games[gameId] = nextGame;
+  console.log(games);
+  eventEmmiter.emit(gameId, nextGame);
+}
+
 type GameEvents = Record<string, (game: Game) => void>;
 
 declare interface GameEventEmmiter {
@@ -128,8 +154,10 @@ export const gameRouter = router({
       if (!game.players[playerId]) {
         game.players[playerId] = { id: playerId, politics };
       }
-      console.log(games);
       eventEmmiter.emit(gameId, game);
+      if (Object.keys(game.players).length >= 5) {
+        startGame(gameId);
+      }
       return game;
     }),
   leaveGame: publicProcedure
@@ -140,31 +168,7 @@ export const gameRouter = router({
   startGame: publicProcedure
     .input(z.object({ gameId: z.string() }))
     .mutation(({ input: { gameId } }) => {
-      const game = games[gameId];
-      console.log(game);
-      if (game.phase !== 'LOBBY') {
-        throw new Error('Game already started');
-      }
-      if (gameId === publicLobbyId) {
-        publicLobbyId = undefined;
-      }
-      const playerIds = Object.keys(game.players);
-      const assignments = Object.create(null);
-      for (const playerId of Object.keys(game.players)) {
-        // select a random player id
-        const playingAs =
-          playerIds[Math.floor(Math.random() * playerIds.length)];
-        assignments[playerId] = { playingAs };
-      }
-      const nextGame = {
-        ...game,
-        phase: 'ANSWER_QUESTION',
-        assignments,
-        playerAnswers: Object.create(null),
-      } satisfies Game;
-      games[gameId] = nextGame;
-      console.log(games);
-      eventEmmiter.emit(gameId, nextGame);
+      startGame(gameId);
     }),
   answerQuestion: publicProcedure
     .input(
