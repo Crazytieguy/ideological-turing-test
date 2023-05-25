@@ -1,79 +1,9 @@
-# Prisma + tRPC + WebSockets
+# Ideological Turing Test
 
-Try demo http://websockets.trpc.io/
+This is a multiplayer online game built for the Democrathon (hackathon for Israeli democracy).
 
-## Features
+It allows players to answer political questions and then attempt to impersonate other players using a short description of their political views. Finally, players try to guess which answer is authentic and which one is an impersonation.
 
-- 🧙‍♂️ E2E type safety with [tRPC](https://trpc.io)
-- ⚡ Full-stack React with Next.js
-- ⚡ WebSockets / Subscription support
-- ⚡ Database with Prisma
-- 🔐 Authorization using [next-auth](https://next-auth.js.org/)
-- ⚙️ VSCode extensions
-- 🎨 ESLint + Prettier
-- 💚 CI setup using GitHub Actions:
-  - ✅ E2E testing with [Playwright](https://playwright.dev/)
-  - ✅ Linting
+The hope is that by incentivising good impersonation, people with different political views will be encouraged to genuinely understand each other better instead of fighting.
 
-## Setup
-
-```bash
-pnpm create next-app --example https://github.com/trpc/trpc --example-path examples/next-prisma-websockets-starter trpc-prisma-websockets-starter
-cd trpc-prisma-websockets-starter
-pnpm i
-pnpm dx
-```
-
-## Deployment
-
-### Using [Render](https://render.com/)
-
-The project contains a [`render.yaml`](./render.yaml) [_"Blueprint"_](https://render.com/docs/blueprint-spec) which makes the project easily deployable on [Render](https://render.com/).
-
-The database is setup with a `starter` plan, but you can use a free plan for 90 days.
-
-Go to [dashboard.render.com/blueprints](https://dashboard.render.com/blueprints) and connect to this Blueprint and see how the app and database automatically gets deployed.
-
-You will either need to create an environment group called `trpc-websockets` with environment variables or remove that from `render.yaml` in favor of manual environment variables that overrides the ones in `/.env`.
-
-## Files of note
-
-<table>
-  <thead>
-    <tr>
-      <th>Path</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="./prisma/schema.prisma"><code>./prisma/schema.prisma</code></a></td>
-      <td>Prisma schema</td>
-    </tr>
-    <tr>
-      <td><a href="./src/api/trpc/[trpc].tsx"><code>./src/api/trpc/[trpc].tsx</code></a></td>
-      <td>tRPC response handler</td>
-    </tr>
-    <tr>
-      <td><a href="./src/server/routers"><code>./src/server/routers</code></a></td>
-      <td>Your app's different tRPC-routers</td>
-    </tr>
-  </tbody>
-</table>
-
-## Commands
-
-```bash
-pnpm build      # runs `prisma generate` + `prisma migrate` + `next build`
-pnpm db-nuke    # resets local db
-pnpm dev        # starts next.js + WebSocket server
-pnpm dx         # starts postgres db + runs migrations + seeds + starts next.js
-pnpm test-dev   # runs e2e tests on dev
-pnpm test-start # runs e2e tests on `next start` - build required before
-pnpm test:unit  # runs normal Vitest unit tests
-pnpm test:e2e   # runs e2e tests
-```
-
----
-
-Created by [@alexdotjs](https://twitter.com/alexdotjs).
+The code is based on a [trpc example](https://github.com/trpc/examples-next-prisma-websockets-starter).
